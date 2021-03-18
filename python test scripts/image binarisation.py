@@ -9,14 +9,15 @@ from skimage import data
 from skimage import io
 from skimage.color import rgb2gray
 
-image = io.imread('testImage.png')
-grayscale = img_as_ubyte(rgb2gray(image))
+image = io.imread('testImage.png')  # load test image
+grayscale = img_as_ubyte(rgb2gray(image))   # convert to grayscale and shove into unsigned integer array
 
 fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(15, 5))
 
-rankFiltered = median(grayscale, disk(160))
+rankFiltered = median(grayscale, disk(160)) # rank filtering at 160th maximum pixel
 
-subtracted = np.subtract(rankFiltered.astype(np.int16), grayscale).clip(0, 255).astype(np.uint8)
+# background subtraction. using np.clip to keep unsigned pixel values within 0 and 255 otherwise negative values and unsigned integers have aneurism
+subtracted = np.subtract(rankFiltered.astype(np.int16), grayscale).clip(0, 255).astype(np.uint8)    
 
 ax1.imshow(subtracted, vmin=0, vmax=255, cmap=plt.cm.gray)
 ax1.axis('off')
