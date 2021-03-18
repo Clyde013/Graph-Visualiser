@@ -3,7 +3,14 @@ Android application to identify written coordinates of points of a graph on pape
 
 Expected flow of code:
 
-Image capture -> EAST OCR to capture bounding regions of written coordinates -> Tesseract OCR to recognise numbers written -> 
+1. Image capture
+2. Prompt users to manually select the boundaries of xy-axes on image and define their ranges
+3. EAST OCR to capture bounding regions of written coordinates
+4. Image binarisation (maybe invert colours for better results) for every isoloated coordinate image to remove noise
+5. Pass through own model to recognise numbers and special characters (π, e)
+6. Form query for wolfram alpha using keyword "fit"
+7. Display results overlaid on image capture, scaled to fit the boundaries
+8. Profit???
 
 Possible sources for use:
 
