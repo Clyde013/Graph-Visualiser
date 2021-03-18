@@ -23,3 +23,5 @@ Efficient and Accurate Implementation of said Scene Text Detector: https://githu
 Tesseract OCR from Google: https://github.com/tesseract-ocr/tesseract
 
 Wolfram Alpha example query: https://www.wolframalpha.com/input/?i=fit+%280%2C0%29%2C+%281%2C1%29%2C+%282%2C2%29%2C+%283%2C3%29
+
+Extended MNIST Dataset: https://www.westernsydney.edu.au/icns/reproducible_research/publication_support_materials/emnist
