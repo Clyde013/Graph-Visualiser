@@ -1,5 +1,11 @@
 # Graph-Visualiser
-Android application to identify written coordinates of points of a graph on paper and overlay a graph fitting those points. Possible sources for use:
+Android application to identify written coordinates of points of a graph on paper and overlay a graph fitting those points. 
+
+Expected flow of code:
+
+Image capture -> EAST OCR to capture bounding regions of written coordinates -> Tesseract OCR to recognise numbers written -> 
+
+Possible sources for use:
 
 Reference paper: https://stacks.stanford.edu/file/druid:yt916dh6570/Naqvi_Sikora_AR_Equation_Plotter.pdf
 
