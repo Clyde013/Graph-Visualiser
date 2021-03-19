@@ -12,3 +12,6 @@ def encode(class_name, classes):
 def decode(one_hot, classes):
     index = one_hot.argmax()
     return classes[index]
+
+def decode_index(one_hot):
+    return one_hot.argmax()
