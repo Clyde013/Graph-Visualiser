@@ -25,3 +25,6 @@ Tesseract OCR from Google: https://github.com/tesseract-ocr/tesseract
 Wolfram Alpha example query: https://www.wolframalpha.com/input/?i=fit+%280%2C0%29%2C+%281%2C1%29%2C+%282%2C2%29%2C+%283%2C3%29
 
 CROHME dataset extractor tool: https://github.com/ThomasLech/CROHME_extractor Could use to extract digits, greek mathematical symbols and operators
+
+Notes:
+1. Put output/ train and test files from CROHME extractor tool in /python test scripts/coordinate recognition/data
