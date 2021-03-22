@@ -93,6 +93,6 @@ reshaped_image = tf.reshape(resized_image, (2500,))  # flatten
 prediction = saved_model.predict(np.expand_dims(reshaped_image, 0))
 
 plt.figure(figsize=(5, 5))
-plt.imshow(cropped_image, vmin=0, vmax=1, cmap=plt.cm.gray)
+plt.imshow(binarised_image, vmin=0, vmax=1, cmap=plt.cm.gray)
 plt.xlabel('predicted output: ' + classes[np.argmax(prediction[0])].decode('utf-8'))    # decode from bytes object
 plt.show()
