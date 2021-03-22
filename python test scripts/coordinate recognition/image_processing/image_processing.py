@@ -17,7 +17,7 @@ def load_image_as_grayscale(filepath):
     return grayscale
 
 
-def binarise_grayscale(grayscale):
+def background_subtract_grayscale(grayscale):
     rankFiltered = median(grayscale, disk(160))  # rank filtering at 160th maximum pixel
 
     # background subtraction. using np.clip to keep unsigned pixel values within 0 and 255 otherwise negative values
@@ -30,9 +30,33 @@ def binarise_grayscale(grayscale):
 
 
 def resize_image(image, box_size):  # box size should be 50, consistent with what was used
-    return transform.resize(image, (box_size, box_size), anti_aliasing=True)    # for some reason this changes the
-    # range of 0-255 to 0-1
+    return transform.resize(image, (box_size, box_size), anti_aliasing=True, preserve_range=True)
 
+
+def binarise_grayscale(image, threshold):  # works only on ranges 0...1
+    image[image > threshold] = 1  # set to white
+    image[image <= threshold] = 0  # set to black
+    return image
+
+
+def crop_borders(image):
+    topborder = -1
+    bottomborder = -1
+    leftborder = -1
+    rightborder = -1
+    for row in range(len(image)):
+        for col in range(len(image[row])):
+            if image[row][col] == 0:  # 0 is black
+                if topborder == -1:
+                    topborder = row
+                bottomborder = row
+                if col < leftborder or leftborder == -1:
+                    leftborder = col
+                if col > rightborder:
+                    rightborder = col
+
+    print("borders :", topborder, bottomborder, leftborder, rightborder)
+    return image[topborder:bottomborder, leftborder:rightborder]
 
 '''
 fig, (ax1) = plt.subplots(1, 1, figsize=(5, 5))
