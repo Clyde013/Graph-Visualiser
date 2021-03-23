@@ -33,10 +33,11 @@ def resize_image(image, box_size):  # box size should be 50, consistent with wha
     return transform.resize(image, (box_size, box_size), anti_aliasing=True, preserve_range=True)
 
 
-def binarise_grayscale(image, threshold):  # works only on ranges 0...1
+def binarise_grayscale(image, threshold, rank_filter):  # works only on ranges 0...1
     image[image > threshold] = 1  # set to white
     image[image <= threshold] = 0  # set to black
-    image = median(image, disk(1))  # remove grainy individual black pixels through rank filtering
+    if rank_filter:
+        image = median(image, disk(1))  # remove grainy individual black pixels through rank filtering
     return image
 
 

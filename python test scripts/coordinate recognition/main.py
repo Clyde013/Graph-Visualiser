@@ -31,6 +31,9 @@ def train_model():
     model = tf.keras.Sequential([tf.keras.Input(shape=(2500,)),  # set input shape as it is 50x50 flattened image
                                  tf.keras.layers.Dense(128, activation='relu'),
                                  tf.keras.layers.Dense(84, activation='relu'),
+                                 tf.keras.layers.Dropout(0.1),
+                                 tf.keras.layers.Dense(128, activation='relu'),
+                                 tf.keras.layers.Dense(84, activation='relu'),
                                  tf.keras.layers.Dense(len(classes))])  # output layer, same format as one_hot
 
     model.compile(optimizer='adam',
@@ -51,7 +54,7 @@ def train_model():
 # default values
 img_path = 'data/justin_pi.jpg'
 threshold = 0.9  # threshold for determining pixel as white or black
-model_path = 'saved_model/model_85.07'
+model_path = 'saved_model/model_85.20'
 
 parser = argparse.ArgumentParser(description='Train or test models.')
 parser.add_argument('--train', type=bool, help='Set true to retrain a new model', default=False)
@@ -84,15 +87,16 @@ saved_model.summary()   # print loaded model summary
 
 grayscale_image = image_processing.load_image_as_grayscale(img_path)
 subtracted_image = image_processing.background_subtract_grayscale(grayscale_image).astype(np.float) / 255  # convert to 0...1 range
-binarised_image = image_processing.binarise_grayscale(subtracted_image, threshold).astype(np.uint8)
+binarised_image = image_processing.binarise_grayscale(subtracted_image, threshold, True).astype(np.uint8)
 cropped_image = image_processing.crop_borders(binarised_image)
 resized_image = image_processing.resize_image(cropped_image, 50)
+binarised_resized_image = image_processing.binarise_grayscale(resized_image, threshold, False)  # remove strange in between values that pop up during resizing
 reshaped_image = tf.reshape(resized_image, (2500,))  # flatten
 
 # expand dimensions because predict works on batches, while we only have single input
 prediction = saved_model.predict(np.expand_dims(reshaped_image, 0))
 
 plt.figure(figsize=(5, 5))
-plt.imshow(binarised_image, vmin=0, vmax=1, cmap=plt.cm.gray)
+plt.imshow(resized_image, vmin=0, vmax=1, cmap=plt.cm.gray)
 plt.xlabel('predicted output: ' + classes[np.argmax(prediction[0])].decode('utf-8'))    # decode from bytes object
 plt.show()
