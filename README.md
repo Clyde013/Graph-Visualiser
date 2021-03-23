@@ -28,3 +28,7 @@ CROHME dataset extractor tool: https://github.com/ThomasLech/CROHME_extractor Co
 
 Notes:
 1. Put output/ train and test files from CROHME extractor tool in /python test scripts/coordinate recognition/data
+2. Commands run on py37 anaconda env
+3. CROHME_Extractor commands:
+`python extract.py -b 50 -d 2011 2012 2013 -c digits greek operators -t 5`
+`python balance.py -b 50 -ub 6000`
