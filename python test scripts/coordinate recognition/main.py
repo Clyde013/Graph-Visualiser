@@ -30,7 +30,7 @@ for i in range(len(test_data)):
 def train_model():
     model = tf.keras.Sequential([tf.keras.Input(shape=(2500,)),  # set input shape as it is 50x50 flattened image
                                  tf.keras.layers.Dense(128, activation='relu'),
-                                 tf.keras.layers.Dense(64, activation='relu'),
+                                 tf.keras.layers.Dense(84, activation='relu'),
                                  tf.keras.layers.Dense(len(classes))])  # output layer, same format as one_hot
 
     model.compile(optimizer='adam',
@@ -49,7 +49,7 @@ def train_model():
 
 
 # default values
-img_path = 'data/justin2.jpg'
+img_path = 'data/justin_pi.jpg'
 threshold = 0.9  # threshold for determining pixel as white or black
 model_path = 'saved_model/model_85.07'
 
