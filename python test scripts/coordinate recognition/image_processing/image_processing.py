@@ -58,7 +58,23 @@ def crop_borders(image):
                     rightborder = col
 
     print("borders :", topborder, bottomborder, leftborder, rightborder)
+
+    '''
+    height = bottomborder - topborder
+    width = rightborder - leftborder
+    if height > width:
+        diff = (height - width) / 2
+        diff = round(diff)
+        leftborder = max(leftborder - diff, 0)
+        rightborder = min(rightborder + diff, len(image[0]))
+    else:
+        diff = (width - height) / 2
+        diff = round(diff)
+        topborder = max(topborder - diff, 0)
+        bottomborder = min(bottomborder + diff, len(image))
+    '''
     return image[topborder:bottomborder, leftborder:rightborder]
+
 
 '''
 fig, (ax1) = plt.subplots(1, 1, figsize=(5, 5))

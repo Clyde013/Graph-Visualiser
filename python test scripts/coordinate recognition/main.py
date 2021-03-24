@@ -30,17 +30,14 @@ for i in range(len(test_data)):
 
 def train_model():
     model = tf.keras.Sequential([tf.keras.Input(shape=(2500,)),  # set input shape as it is 50x50 flattened image
-                                 tf.keras.layers.Dense(64, activation='relu'),
-                                 tf.keras.layers.Dropout(.3),
-                                 tf.keras.layers.Dense(50, activation='sigmoid'),
-                                 tf.keras.layers.Dense(32, activation='relu'),
+                                 tf.keras.layers.Dense(128, activation='relu'),
                                  tf.keras.layers.Dense(len(classes))])  # output layer, same format as one_hot
 
     model.compile(optimizer='adam',
                   loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
                   metrics=['accuracy'])
 
-    model.fit(train_images, train_labels, epochs=10)
+    model.fit(train_images, train_labels, epochs=5)
 
     test_loss, test_acc = model.evaluate(test_images, test_labels, verbose=2)
     print('\nTest accuracy:', test_acc, '\n')
@@ -55,7 +52,7 @@ def train_model():
 # default values
 img_path = 'data/justin_pi.jpg'
 threshold = 0.9  # threshold for determining pixel as white or black
-model_path = 'saved_model/model_88.58'
+model_path = 'saved_model/model_93.59'
 
 parser = argparse.ArgumentParser(description='Train or test models.')
 parser.add_argument('--train', type=bool, help='Set true to retrain a new model', default=False)
@@ -103,30 +100,29 @@ def load_image_into_input(images):
         display_images[i] = binarised_resized_image
         input_images[i] = reshaped_image
 
-    print(input_images.shape)
     return display_images, input_images
 
 
-fig, (ax1, ax2, ax3, ax4) = plt.subplots(1, 4, figsize=(20, 5))
+fig, (ax1, ax2, ax3, ax4) = plt.subplots(1, 4, figsize=(10, 4))
 
-display_images, input_images = load_image_into_input([img_path, 'data/justin_8.jpg', 'data/justin_2.jpg', 'data/justin_beta.jpg'])
-print(input_images.shape)
+display_images, input_images = load_image_into_input([img_path, 'data/justin_beta.jpg', 'data/justin_plus.jpg',
+                                                      'data/justin_3.jpg'])
 predictions = saved_model.predict(input_images)
 
 ax1.imshow(display_images[0], vmin=0, vmax=1, cmap=plt.cm.gray)
-ax1.set_title('predicted output: ' + classes[np.argmax(predictions[0])].decode('utf-8'))  # decode from bytes object
+ax1.set_title('predicted output: ' + classes[np.argmax(predictions[0])])  # decode from bytes object
 ax1.axis('off')
 
 ax2.imshow(display_images[1], vmin=0, vmax=1, cmap=plt.cm.gray)
-ax2.set_title('predicted output: ' + classes[np.argmax(predictions[1])].decode('utf-8'))  # decode from bytes object
+ax2.set_title('predicted output: ' + classes[np.argmax(predictions[1])])  # decode from bytes object
 ax2.axis('off')
 
 ax3.imshow(display_images[2], vmin=0, vmax=1, cmap=plt.cm.gray)
-ax3.set_title('predicted output: ' + classes[np.argmax(predictions[2])].decode('utf-8'))  # decode from bytes object
+ax3.set_title('predicted output: ' + classes[np.argmax(predictions[2])])  # decode from bytes object
 ax3.axis('off')
 
 ax4.imshow(display_images[3], vmin=0, vmax=1, cmap=plt.cm.gray)
-ax4.set_title('predicted output: ' + classes[np.argmax(predictions[3])].decode('utf-8'))  # decode from bytes object
+ax4.set_title('predicted output: ' + classes[np.argmax(predictions[3])])  # decode from bytes object
 ax4.axis('off')
 
 plt.show()

@@ -12,10 +12,6 @@ def loadPickle(filepath):  # load train / test data from pickle format
 # loadPickle('./data/test/test.pickle')
 
 def loadClasses(filepath):  # load label from classes.txt and output in array
-    classesFile = open(filepath, 'rb')
-    labels = []
-    for label in classesFile:
-        labels.append(label.strip())
-    return labels
+    return open(filepath, 'r').read().split()
 
 # loadClasses('classes.txt')
