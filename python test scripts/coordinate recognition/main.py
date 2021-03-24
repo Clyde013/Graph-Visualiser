@@ -6,6 +6,18 @@ import one_hot
 import matplotlib.pyplot as plt
 import argparse
 
+gpus = tf.config.experimental.list_physical_devices('GPU')
+if gpus:
+    try:
+        # Currently, memory growth needs to be the same across GPUs
+        for gpu in gpus:
+            tf.config.experimental.set_memory_growth(gpu, True)
+        logical_gpus = tf.config.experimental.list_logical_devices('GPU')
+        print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
+    except RuntimeError as e:
+        # Memory growth must be set before GPUs have been initialized
+        print(e)
+
 # feature data already flattened from original box size of 50
 test_data = loadPickle('./data/test/test.pickle')
 train_data = loadPickle('./data/train/train.pickle')
@@ -13,46 +25,51 @@ train_data = loadPickle('./data/train/train.pickle')
 
 classes = loadClasses('classes.txt')  # labels for one_hot
 
-train_images = np.empty((len(train_data), len(train_data[0]['features'])))
+train_images = np.empty((len(train_data), 50, 50, 1))
 train_labels = np.empty(len(train_data))
 
 for i in range(len(train_data)):
     train_labels[i] = one_hot.decode_index(train_data[i]['label'])
-    train_images[i] = train_data[i]['features']
+    train_images[i] = np.array(train_data[i]['features']).reshape((50, 50, 1))
 
-test_images = np.empty((len(test_data), len(test_data[0]['features'])))
+test_images = np.empty((len(test_data), 50, 50, 1))
 test_labels = np.empty(len(test_data))
 
 for i in range(len(test_data)):
     test_labels[i] = one_hot.decode_index(test_data[i]['label'])
-    test_images[i] = test_data[i]['features']
+    test_images[i] = np.array(test_data[i]['features']).reshape((50, 50, 1))
 
 
 def train_model():
-    model = tf.keras.Sequential([tf.keras.Input(shape=(2500,)),  # set input shape as it is 50x50 flattened image
-                                 tf.keras.layers.Dense(128, activation='relu'),
+    model = tf.keras.Sequential([tf.keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=(50, 50, 1)),
+                                 tf.keras.layers.MaxPooling2D((2, 2)),
+                                 tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
+                                 tf.keras.layers.MaxPooling2D((2, 2)),
+                                 tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
+                                 tf.keras.layers.Flatten(),
+                                 tf.keras.layers.Dense(64, activation='relu'),
                                  tf.keras.layers.Dense(len(classes))])  # output layer, same format as one_hot
 
     model.compile(optimizer='adam',
                   loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
                   metrics=['accuracy'])
 
-    model.fit(train_images, train_labels, epochs=5)
+    model.fit(train_images, train_labels, epochs=3)
 
     test_loss, test_acc = model.evaluate(test_images, test_labels, verbose=2)
     print('\nTest accuracy:', test_acc, '\n')
 
     # output probabilities instead with softmax output layer
-    probability_model = tf.keras.Sequential([tf.keras.Input(shape=(2500,)), model, tf.keras.layers.Softmax()])
+    probability_model = tf.keras.Sequential([tf.keras.Input(shape=(50, 50, 1)), model, tf.keras.layers.Softmax()])
     # tf needs us to restate the input layer shape for some reason, otherwise it won't save
-    probability_model.save('saved_model/model_{:.2f}'.format(test_acc * 100))
-    return 'saved_model/model_{:.2f}'.format(test_acc * 100)
+    probability_model.save('saved_model/cnn_model_{:.2f}'.format(test_acc * 100))
+    return 'saved_model/cnn_model_{:.2f}'.format(test_acc * 100)
 
 
 # default values
 img_path = 'data/justin_pi.jpg'
 threshold = 0.9  # threshold for determining pixel as white or black
-model_path = 'saved_model/model_93.59'
+model_path = 'saved_model/cnn_model_96.82'
 
 parser = argparse.ArgumentParser(description='Train or test models.')
 parser.add_argument('--train', type=bool, help='Set true to retrain a new model', default=False)
@@ -86,7 +103,7 @@ def load_image_into_input(images):
     # step 3: profit???
 
     display_images = np.empty((len(images), 50, 50))
-    input_images = np.empty((len(images), 2500,))
+    input_images = np.empty((len(images), 50, 50, 1))
     for i in range(len(images)):
         grayscale_image = image_processing.load_image_as_grayscale(images[i])
         subtracted_image = image_processing.background_subtract_grayscale(grayscale_image).astype(
@@ -96,16 +113,16 @@ def load_image_into_input(images):
         resized_image = image_processing.resize_image(cropped_image, 50)
         # remove strange in between values that pop up during resizing
         binarised_resized_image = image_processing.binarise_grayscale(resized_image, threshold, False)
-        reshaped_image = tf.reshape(binarised_resized_image, (2500,))  # flatten
+        # reshaped_image = tf.reshape(binarised_resized_image, (2500,))  # flatten
         display_images[i] = binarised_resized_image
-        input_images[i] = reshaped_image
+        input_images[i] = np.array(binarised_resized_image).reshape((50, 50, 1))
 
     return display_images, input_images
 
 
 fig, (ax1, ax2, ax3, ax4) = plt.subplots(1, 4, figsize=(10, 4))
 
-display_images, input_images = load_image_into_input([img_path, 'data/justin_beta.jpg', 'data/justin_plus.jpg',
+display_images, input_images = load_image_into_input([img_path, 'data/justin_4.jpg', 'data/justin_5.jpg',
                                                       'data/justin_3.jpg'])
 predictions = saved_model.predict(input_images)
 
