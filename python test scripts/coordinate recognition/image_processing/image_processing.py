@@ -10,6 +10,8 @@ from skimage import util
 from skimage import io
 from skimage.color import rgb2gray
 
+import math
+
 
 def load_image_as_grayscale(filepath):
     image = io.imread(filepath)  # load test image
@@ -30,7 +32,7 @@ def background_subtract_grayscale(grayscale):
 
 
 def resize_image(image, box_size):  # box size should be 50, consistent with what was used
-    return transform.resize(image, (box_size, box_size), anti_aliasing=True, preserve_range=True)
+    return transform.resize(image, (box_size, box_size), anti_aliasing=False, preserve_range=True)
 
 
 def binarise_grayscale(image, threshold, rank_filter):  # works only on ranges 0...1
@@ -57,21 +59,30 @@ def crop_borders(image):
                 if col > rightborder:
                     rightborder = col
 
-    '''
     height = bottomborder - topborder
     width = rightborder - leftborder
     if height > width:
         diff = (height - width) / 2
-        diff = round(diff)
-        leftborder = max(leftborder - diff, 0)
-        rightborder = min(rightborder + diff, len(image[0]))
+        diff = math.floor(diff)
+        leftborder = leftborder - diff
+        rightborder = rightborder + diff
     else:
         diff = (width - height) / 2
-        diff = round(diff)
-        topborder = max(topborder - diff, 0)
-        bottomborder = min(bottomborder + diff, len(image))
-    '''
-    return image[topborder:bottomborder, leftborder:rightborder]
+        diff = math.floor(diff)
+        topborder = topborder - diff
+        bottomborder = bottomborder + diff
+
+    cropped_image = image[max(topborder, 0):min(bottomborder, len(image)),
+                    max(leftborder, 0):min(rightborder, len(image[0]))]
+
+    return cropped_image
+    # will pad and center image
+    shape = cropped_image.shape
+
+    if shape[0] > shape[1]:     # height > width
+        return np.pad(cropped_image, [(shape[0]-shape[1], shape[0]-shape[1]), (0, 0)], mode='constant', constant_values=1)
+    else:   # width > height
+        return np.pad(cropped_image, [(0, 0), (shape[1]-shape[0], shape[1]-shape[0])], mode='constant', constant_values=1)
 
 
 '''

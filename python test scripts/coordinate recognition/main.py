@@ -5,6 +5,7 @@ from image_processing import image_processing
 import one_hot
 import matplotlib.pyplot as plt
 import argparse
+import math
 
 gpus = tf.config.experimental.list_physical_devices('GPU')
 if gpus:
@@ -120,15 +121,20 @@ def load_image_into_input(images):
     return display_images, input_images
 
 
-display_images, input_images = load_image_into_input([img_path, 'data/justin_3.jpg', 'data/justin_4.jpg',
+display_images, input_images = load_image_into_input([img_path, 'data/justin_3.jpg', 'data/another_justin_4.jpg',
                                                       'data/justin_5.jpg', 'data/justin_8.jpg', 'data/justin_9.jpg',
-                                                      'data/'])
+                                                      'data/justin_2.jpg'])
 predictions = saved_model.predict(input_images)
-fig, axes = plt.subplots(2, len(display_images), figsize=(10, 5))
+cols = 3
+rows = math.ceil(len(display_images) / cols)
+fig, axes = plt.subplots(rows, cols)
 
-for ax in range(len(axes)):
-    axes[ax].imshow(display_images[ax], vmin=0, vmax=1, cmap=plt.cm.gray)
-    axes[ax].set_title('predicted: ' + classes[np.argmax(predictions[ax])])  # decode from bytes object
-    axes[ax].axis('off')
+fig.subplots_adjust(hspace=0.2)
+
+for i, ax in enumerate(axes.flatten()):
+    if i < len(display_images):
+        ax.imshow(display_images[i], vmin=0, vmax=1, cmap=plt.cm.gray)
+        ax.set_title('predicted: ' + classes[np.argmax(predictions[i])])  # decode from bytes object
+        ax.axis('off')
 
 plt.show()
