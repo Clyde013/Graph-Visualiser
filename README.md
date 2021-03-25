@@ -32,4 +32,4 @@ Notes:
 3. CROHME_Extractor commands:
 `python extract.py -b 50 -d 2011 2012 2013 -c digits greek operators -t 5`
 `python balance.py -b 50 -ub 6000`
-4. EAST commands: `py run_demo_server.py --checkpoint_path tmp/east_icdar2015_resnet_v1_50_rbox`
+4. EAST commands: `py run_demo_server.py --checkpoint_path tmp/east_icdar2015_resnet_v1_50_rbox` opens http://localhost:8769/
