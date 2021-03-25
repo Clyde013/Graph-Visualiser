@@ -71,6 +71,7 @@ def train_model():
 img_path = 'data/justin_pi.jpg'
 threshold = 0.9  # threshold for determining pixel as white or black
 model_path = 'saved_model/cnn_model_96.82'
+cols = 4
 
 parser = argparse.ArgumentParser(description='Train or test models.')
 parser.add_argument('--train', type=bool, help='Set true to retrain a new model', default=False)
@@ -80,12 +81,16 @@ parser.add_argument('--img_path', type=str, help='Filepath to image to run model
                     default=img_path)
 parser.add_argument('--model_path', type=str, help='Filepath to model to run. Default is "saved_model/model_85.07"',
                     default=model_path)
+parser.add_argument('--cols', type=int, help='Number of columns used to display inference results.',
+                    default=cols)
+
 
 args = parser.parse_args()
 
 threshold = args.threshold
 img_path = args.img_path
 model_path = args.model_path
+cols = args.cols
 
 if args.train:
     print('- - - - - - - - - - - - - - - - - - - - TRAINING MODEL - - - - - - - - - - - - - - - - - - - -')
@@ -121,11 +126,13 @@ def load_image_into_input(images):
     return display_images, input_images
 
 
-display_images, input_images = load_image_into_input([img_path, 'data/justin_3.jpg', 'data/another_justin_4.jpg',
-                                                      'data/justin_5.jpg', 'data/justin_8.jpg', 'data/justin_9.jpg',
-                                                      'data/justin_2.jpg'])
+display_images, input_images = load_image_into_input([img_path, 'data/justin_1.jpg', 'data/justin_2.jpg',
+                                                      'data/justin_3.jpg', 'data/another_justin_4.jpg',
+                                                      'data/justin_5.jpg', 'data/justin_8.jpg',
+                                                      'data/another_justin_9.jpg', 'data/justin_0.jpg',
+                                                      'data/justin_beta.jpg'])
+
 predictions = saved_model.predict(input_images)
-cols = 3
 rows = math.ceil(len(display_images) / cols)
 fig, axes = plt.subplots(rows, cols)
 
