@@ -120,26 +120,15 @@ def load_image_into_input(images):
     return display_images, input_images
 
 
-fig, (ax1, ax2, ax3, ax4) = plt.subplots(1, 4, figsize=(10, 4))
-
-display_images, input_images = load_image_into_input([img_path, 'data/justin_4.jpg', 'data/justin_5.jpg',
-                                                      'data/justin_3.jpg'])
+display_images, input_images = load_image_into_input([img_path, 'data/justin_3.jpg', 'data/justin_4.jpg',
+                                                      'data/justin_5.jpg', 'data/justin_8.jpg', 'data/justin_9.jpg',
+                                                      'data/'])
 predictions = saved_model.predict(input_images)
+fig, axes = plt.subplots(2, len(display_images), figsize=(10, 5))
 
-ax1.imshow(display_images[0], vmin=0, vmax=1, cmap=plt.cm.gray)
-ax1.set_title('predicted output: ' + classes[np.argmax(predictions[0])])  # decode from bytes object
-ax1.axis('off')
-
-ax2.imshow(display_images[1], vmin=0, vmax=1, cmap=plt.cm.gray)
-ax2.set_title('predicted output: ' + classes[np.argmax(predictions[1])])  # decode from bytes object
-ax2.axis('off')
-
-ax3.imshow(display_images[2], vmin=0, vmax=1, cmap=plt.cm.gray)
-ax3.set_title('predicted output: ' + classes[np.argmax(predictions[2])])  # decode from bytes object
-ax3.axis('off')
-
-ax4.imshow(display_images[3], vmin=0, vmax=1, cmap=plt.cm.gray)
-ax4.set_title('predicted output: ' + classes[np.argmax(predictions[3])])  # decode from bytes object
-ax4.axis('off')
+for ax in range(len(axes)):
+    axes[ax].imshow(display_images[ax], vmin=0, vmax=1, cmap=plt.cm.gray)
+    axes[ax].set_title('predicted: ' + classes[np.argmax(predictions[ax])])  # decode from bytes object
+    axes[ax].axis('off')
 
 plt.show()

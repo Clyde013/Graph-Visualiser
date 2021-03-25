@@ -57,8 +57,6 @@ def crop_borders(image):
                 if col > rightborder:
                     rightborder = col
 
-    print("borders :", topborder, bottomborder, leftborder, rightborder)
-
     '''
     height = bottomborder - topborder
     width = rightborder - leftborder
