@@ -16,7 +16,7 @@ Possible sources for use:
 
 Thanks google: https://github.com/googlesamples/mlkit/tree/master/android/vision-quickstart  
 Nevermind Google: https://stackoverflow.com/questions/53638369/how-to-detect-single-digit-numbers-with-firebase-ml-kit-on-android  
-Use cloud vision since that provides support for bounding box of symbols: https://firebase.google.com/docs/ml/android/recognize-text
+Don't use cloud vision since we have to upgrade to Blaze to use Cloud ML.  
 Probably use it to identify bounding boxes and then apply my model to it. Check whether numbers are identified as symbols or have to use block's bounding box and separate manually to identify
 
 Reference paper: https://stacks.stanford.edu/file/druid:yt916dh6570/Naqvi_Sikora_AR_Equation_Plotter.pdf 
