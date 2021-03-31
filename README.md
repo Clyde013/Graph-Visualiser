@@ -12,7 +12,14 @@ Expected flow of code:
 7. Display results overlaid on image capture, scaled to fit the boundaries
 8. Profit???
 
+or
+
+1. ML-kit
+2. Profit.
+
 Possible sources for use:
+
+Thanks google: https://github.com/googlesamples/mlkit/tree/master/android/vision-quickstart
 
 Reference paper: https://stacks.stanford.edu/file/druid:yt916dh6570/Naqvi_Sikora_AR_Equation_Plotter.pdf
 
