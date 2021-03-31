@@ -5,35 +5,25 @@ Expected flow of code:
 
 1. Image capture
 2. Prompt users to manually select the boundaries of xy-axes on image and define their ranges
-3. EAST OCR to capture bounding regions of written coordinates
+3. ML-Kit to identify bounding boxes
 4. Image binarisation (maybe invert colours for better results) for every isoloated coordinate image to remove noise
 5. Pass through own model to recognise numbers and special characters (π, e)
 6. Form query for wolfram alpha using keyword "fit"
 7. Display results overlaid on image capture, scaled to fit the boundaries
 8. Profit???
 
-or
-
-1. ML-kit
-2. Profit.
-
 Possible sources for use:
 
-Thanks google: https://github.com/googlesamples/mlkit/tree/master/android/vision-quickstart
-
-Reference paper: https://stacks.stanford.edu/file/druid:yt916dh6570/Naqvi_Sikora_AR_Equation_Plotter.pdf
-
-Efficient and Accurate Scene Text Detector: https://arxiv.org/pdf/1704.03155.pdf#page=1&zoom=auto,-265,798
-
-Efficient and Accurate Implementation of said Scene Text Detector: https://github.com/argman/EAST
-
-Tesseract OCR from Google: https://github.com/tesseract-ocr/tesseract
-
-Wolfram Alpha example query: https://www.wolframalpha.com/input/?i=fit+%280%2C0%29%2C+%281%2C1%29%2C+%282%2C2%29%2C+%283%2C3%29
-
-CROHME dataset extractor tool: https://github.com/ThomasLech/CROHME_extractor Could use to extract digits, greek mathematical symbols and operators
-
-Chaquopy Android Studio and Python: https://chaquo.com/chaquopy/doc/current/
+Thanks google: https://github.com/googlesamples/mlkit/tree/master/android/vision-quickstart \
+Nevermind Google: https://stackoverflow.com/questions/53638369/how-to-detect-single-digit-numbers-with-firebase-ml-kit-on-android
+Probably use it to identify bounding boxes and then apply my model to it
+Reference paper: https://stacks.stanford.edu/file/druid:yt916dh6570/Naqvi_Sikora_AR_Equation_Plotter.pdf \
+Efficient and Accurate Scene Text Detector: https://arxiv.org/pdf/1704.03155.pdf#page=1&zoom=auto,-265,798 \
+Efficient and Accurate Implementation of said Scene Text Detector: https://github.com/argman/EAST \
+Tesseract OCR from Google: https://github.com/tesseract-ocr/tesseract \
+Wolfram Alpha example query: https://www.wolframalpha.com/input/?i=fit+%280%2C0%29%2C+%281%2C1%29%2C+%282%2C2%29%2C+%283%2C3%29 \
+CROHME dataset extractor tool: https://github.com/ThomasLech/CROHME_extractor Could use to extract digits, greek mathematical symbols and operators \
+Chaquopy Android Studio and Python: https://chaquo.com/chaquopy/doc/current/ \
 
 Notes:
 1. Put output/ train and test files from CROHME extractor tool in /python test scripts/coordinate recognition/data
