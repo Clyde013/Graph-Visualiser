@@ -26,6 +26,8 @@ Wolfram Alpha example query: https://www.wolframalpha.com/input/?i=fit+%280%2C0%
 
 CROHME dataset extractor tool: https://github.com/ThomasLech/CROHME_extractor Could use to extract digits, greek mathematical symbols and operators
 
+Chaquopy Android Studio and Python: https://chaquo.com/chaquopy/doc/current/
+
 Notes:
 1. Put output/ train and test files from CROHME extractor tool in /python test scripts/coordinate recognition/data
 2. Commands run on py37 anaconda env
