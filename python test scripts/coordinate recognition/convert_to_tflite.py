@@ -2,7 +2,7 @@ import tensorflow as tf
 import argparse
 
 parser = argparse.ArgumentParser(description='Train or test models.')
-parser.add_argument('--model_directory', type=String, help='Set directory of the model', default="saved_model"
+parser.add_argument('--model_directory', type=str, help='Set directory of the model', default="saved_model"
                                                                                                  "/cnn_model_96.82")
 args = parser.parse_args()
 
