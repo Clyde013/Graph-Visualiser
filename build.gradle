@@ -5,6 +5,7 @@ buildscript {
         google()
         jcenter()
         maven { url "https://chaquo.com/maven" }
+        google()
     }
     dependencies {
         classpath "com.android.tools.build:gradle:4.1.1"
