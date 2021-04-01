@@ -2,6 +2,7 @@ package com.example.graphvisualiser
 
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
+import android.content.Intent
 import android.os.Bundle
 import android.os.PersistableBundle
 import android.view.animation.AnticipateOvershootInterpolator
@@ -28,5 +29,11 @@ class SplashscreenActivity : AppCompatActivity() {
         scaleAnimatorSet.duration = 1000
         scaleAnimatorSet.startDelay = 50
         scaleAnimatorSet.start()
+
+        val changedIntent = Intent(this, MainActivity::class.java)
+        changedIntent!!.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+        startActivity(changedIntent)   // starting the activity should show no animation, otherwise it
+        finish()                // causes two separate animations to overlap with the override
+        overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
     }
 }
