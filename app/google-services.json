@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "501121856429",
+    "project_id": "graph-visualiser",
+    "storage_bucket": "graph-visualiser.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:501121856429:android:0c6c8b5e75881af4282724",
+        "android_client_info": {
+          "package_name": "com.example.graphvisualiser"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "501121856429-r874rsusvh6mepr104aatlgkd504ceum.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAgoZqcT4iYvWlyPursUzGKbymlp-VPR6I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "501121856429-r874rsusvh6mepr104aatlgkd504ceum.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
