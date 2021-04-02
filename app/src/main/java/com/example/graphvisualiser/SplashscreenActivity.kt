@@ -4,15 +4,22 @@ import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.os.PersistableBundle
 import android.view.animation.AnticipateOvershootInterpolator
 import android.widget.LinearLayout
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 
 class SplashscreenActivity : AppCompatActivity() {
-    override fun onCreate(savedInstanceState: Bundle?, persistentState: PersistableBundle?) {
-        super.onCreate(savedInstanceState, persistentState)
+    private val myViewModel: MyViewModel by viewModels()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splashscreen)
+
+        downloadModel(myViewModel)
 
         val splashScreenLayout = findViewById<LinearLayout>(R.id.splashScreenLinearLayout)
         // start objects as invisible
@@ -30,10 +37,12 @@ class SplashscreenActivity : AppCompatActivity() {
         scaleAnimatorSet.startDelay = 50
         scaleAnimatorSet.start()
 
-        val changedIntent = Intent(this, MainActivity::class.java)
-        changedIntent!!.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
-        startActivity(changedIntent)   // starting the activity should show no animation, otherwise it
-        finish()                // causes two separate animations to overlap with the override
-        overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
+        Handler(Looper.myLooper()!!).postDelayed({
+            val changedIntent = Intent(this, MainActivity::class.java)
+            changedIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+            startActivity(changedIntent)   // starting the activity should show no animation, otherwise it
+            finish()                // causes two separate animations to overlap with the override
+            overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
+        }, 2000)
     }
 }
