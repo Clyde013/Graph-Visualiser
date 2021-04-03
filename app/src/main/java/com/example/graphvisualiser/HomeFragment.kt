@@ -24,14 +24,13 @@ class HomeFragment: Fragment() {
     ): View? {
         val root = inflater.inflate(R.layout.fragment_home, container, false)
 
-        val imageView = root.findViewById<ImageView>(R.id.imageView3)
         val button = root.findViewById<ImageButton>(R.id.photoButton)
         button.setOnClickListener {
             val bm: InputStream = resources.openRawResource(R.raw.justin_pi)
             val bufferedInputStream = BufferedInputStream(bm)
             val bmp = BitmapFactory.decodeStream(bufferedInputStream)
 
-            //imageView.setImageBitmap(plotImageInput(requireContext(), bmp))
+            //imageView.setImageBitmap(plotImageInput(requireContext(), bmp))   // use for testing to see what input image is fed into the model
             Log.i("model", "predicted output: ${runModel(requireContext(), myViewModel, processImageInput(requireContext(), bmp))}")
         }
 
