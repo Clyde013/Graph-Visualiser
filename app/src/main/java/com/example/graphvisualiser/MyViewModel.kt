@@ -5,5 +5,5 @@ import androidx.lifecycle.ViewModel
 import java.io.File
 
 class MyViewModel: ViewModel() {
-    val modelAvailable = MutableLiveData<File?>(null)
+    val modelPath = MutableLiveData<File?>(null)
 }

@@ -7,19 +7,18 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.PersistableBundle
+import android.util.Log
 import android.view.animation.AnticipateOvershootInterpolator
 import android.widget.LinearLayout
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 
 class SplashscreenActivity : AppCompatActivity() {
-    private val myViewModel: MyViewModel by viewModels()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splashscreen)
 
-        downloadModel(myViewModel)
+        downloadModel(null)     // just download the model
 
         val splashScreenLayout = findViewById<LinearLayout>(R.id.splashScreenLinearLayout)
         // start objects as invisible
