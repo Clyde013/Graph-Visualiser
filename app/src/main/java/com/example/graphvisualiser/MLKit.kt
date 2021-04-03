@@ -2,6 +2,7 @@ package com.example.graphvisualiser
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.util.Log
 import android.widget.Toast
 import com.chaquo.python.PyException
@@ -48,11 +49,34 @@ fun processImageInput(context: Context, image: Bitmap): Array<Array<ByteArray>>?
     image.recycle()
 
     return try{
-        val imageDimensions = Array(50) {Array(50) { ByteArray(1) {0} } }    // init 3d bytearray (50x50 dims and 1 grayscale channel)
+        val imageDimensions = Array(50) {Array(50) { ByteArray(1) } }    // init 3d bytearray (50x50 dims and 1 grayscale channel)
         val imageArray = mainModule.callAttr("load_image_into_input", byteArray).toJava(imageDimensions.javaClass)
         imageArray
     }catch(e: PyException){
         Toast.makeText(context, "something went wrong processing image input :(", Toast.LENGTH_SHORT).show()
+        null
+    }
+}
+
+fun plotImageInput(context: Context, image: Bitmap): Bitmap?{    // start python pipeline
+    if (!Python.isStarted()){
+        Python.start(AndroidPlatform(context))
+    }
+
+    val py = Python.getInstance()
+    val mainModule = py.getModule("pipeline")
+
+    val stream = ByteArrayOutputStream()
+    image.compress(Bitmap.CompressFormat.PNG, 100, stream)
+    val byteArray: ByteArray = stream.toByteArray()
+    image.recycle()
+
+    return try{
+        val bytes = mainModule.callAttr("plot_image", byteArray).toJava(ByteArray::class.java)
+        Log.i("model plot", "plotted image")
+        return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+    }catch(e: PyException){
+        e.printStackTrace()
         null
     }
 }
@@ -68,8 +92,8 @@ fun runModel(context:Context, viewModel: MyViewModel, imageArray: Array<Array<By
 
         for (row in imageArray){
             for (col in row){
-                for (byte in col){
-                    input.put(byte)
+                for (byte in col){  // processing outputs a byte array of 1 and 0
+                    input.putFloat(byte.toFloat())  // but model accepts 1f and 0f values so convert to float
                 }
             }
         }
