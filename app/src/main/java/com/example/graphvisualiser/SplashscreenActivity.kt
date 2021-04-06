@@ -1,9 +1,11 @@
 package com.example.graphvisualiser
 
+import android.Manifest
 import android.animation.Animator
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -16,6 +18,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.observe
 
@@ -27,10 +30,10 @@ class SplashscreenActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splashscreen)
 
-        downloadModel(myViewModel)     // download the model
-
         val loadingTextView = findViewById<TextView>(R.id.splashScreenLoadingStatusTextView)
         loadingTextView.text = "Downloading Machine Learning Model"
+
+        downloadModel(myViewModel)     // download the model
 
         val loadingLinearLayout = findViewById<LinearLayout>(R.id.splashScreenLoadingLinearLayout)
         val flashingAnimation = AlphaAnimation(0f, 1f)
@@ -56,6 +59,8 @@ class SplashscreenActivity : AppCompatActivity() {
         scaleAnimatorSet.startDelay = 50
         scaleAnimatorSet.start()
 
+        checkPermissions()
+
         myViewModel.modelPath.observe(this) {
             if (it != null) {   // model has been downloaded
                 Handler(Looper.myLooper()!!).postDelayed({
@@ -66,6 +71,23 @@ class SplashscreenActivity : AppCompatActivity() {
                     overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
                 }, 2000)
             }
+        }
+    }
+
+    private fun checkPermissions(){
+        val permsNeeded = ArrayList<String>()
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED){
+            permsNeeded.add(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.INTERNET)
+                != PackageManager.PERMISSION_GRANTED){
+            permsNeeded.add(Manifest.permission.INTERNET)
+        }
+
+        if (permsNeeded.isNotEmpty()) {
+            requestPermissions(permsNeeded.toArray(arrayOf<String>()), 0)
         }
     }
 }

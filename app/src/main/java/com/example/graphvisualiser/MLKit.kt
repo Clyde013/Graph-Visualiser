@@ -155,6 +155,7 @@ fun recognizeText(image: InputImage) {
                             val boundingBox: Rect = element.boundingBox!!
                             val cornerPoints: Array<Point> = element.cornerPoints!!
                             val text = element.text
+                            Log.i("google model", "identified text $text at ${cornerPoints[0].toString()}")
                         }
                     }
                 }

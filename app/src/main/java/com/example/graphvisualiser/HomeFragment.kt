@@ -1,6 +1,8 @@
 package com.example.graphvisualiser
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
@@ -12,15 +14,18 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.fragment.findNavController
 import com.google.common.util.concurrent.ListenableFuture
+import com.google.mlkit.vision.common.InputImage
 import java.io.BufferedInputStream
 import java.io.File
 import java.io.InputStream
@@ -42,14 +47,21 @@ class HomeFragment: Fragment(), Executor {
 
         val button = root.findViewById<ImageButton>(R.id.photoButton)
         button.setOnClickListener {
-            val bm: InputStream = resources.openRawResource(R.raw.justin_pi)
+            val bm: InputStream = resources.openRawResource(R.raw.justin_eqn)
             val bufferedInputStream = BufferedInputStream(bm)
             val bmp = BitmapFactory.decodeStream(bufferedInputStream)
 
-            takePicture()
+            // takePicture()
+            recognizeText(InputImage.fromBitmap(bmp, 0))
 
             //imageView.setImageBitmap(plotImageInput(requireContext(), bmp))   // use for testing to see what input image is fed into the model
-            Log.i("model", "predicted output: ${runModel(requireContext(), myViewModel, processImageInput(requireContext(), bmp))}")
+            //Log.i("model", "predicted output: ${runModel(requireContext(), myViewModel, processImageInput(requireContext(), bmp))}")
+        }
+
+        /* check for camera permissions */
+        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+            button.isEnabled = false
+            Toast.makeText(requireContext(), "Please enable camera permissions and restart the app", Toast.LENGTH_LONG).show()
         }
 
         /* camera setup */
