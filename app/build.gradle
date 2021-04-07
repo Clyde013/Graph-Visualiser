@@ -63,6 +63,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 
     implementation 'pl.droidsonroids.gif:android-gif-drawable:1.2.17'
+    implementation 'org.jsoup:jsoup:1.11.2'
 
     implementation 'com.google.android.gms:play-services-mlkit-text-recognition:16.1.3'
 

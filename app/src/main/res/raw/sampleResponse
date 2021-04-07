@@ -1,0 +1,69 @@
+<!-- sample response of http://api.wolframalpha.com/v2/query?appid=${appid}&input=fit+(1,2)+(2,4)+(3,6) -->
+
+<queryresult success="true" error="false" xml:space="preserve" numpods="5" datatypes="DataFit" timedout="" timedoutpods="" timing="1.674" parsetiming="0.674" parsetimedout="false" recalculate="" id="MSP1877111075d884h6ba7000004gaf819cgbcdg5g1" host="https://www5b.wolframalpha.com" server="23" related="https://www5b.wolframalpha.com/api/v1/relatedQueries.jsp?id=MSPa1878111075d884h6ba7000001gaggg1ehh2e1e971878216327553545495" version="2.6" inputstring="fit (1,2) (2,4) (3,6)">
+<pod title="Input interpretation" scanner="Identity" id="Input" position="100" error="false" numsubpods="1">
+<subpod title="">
+<img src="https://www5b.wolframalpha.com/Calculate/MSP/MSP1879111075d884h6ba7000004569eg116c45ifd5?MSPStoreType=image/gif&s=23" alt="fit | {{1, 2}, {2, 4}, {3, 6}}" title="fit | {{1, 2}, {2, 4}, {3, 6}}" width="201" height="33" type="Grid" themes="1,2,3,4,5,6,7,8,9,10,11,12" colorinvertable="true"/>
+    <plaintext>fit | {{1, 2}, {2, 4}, {3, 6}}</plaintext>
+</subpod>
+    <expressiontypes count="1">
+<expressiontype name="Default"/>
+</expressiontypes>
+</pod>
+    <pod title="Least-squares best fits" scanner="DataFitting" id="LeastSquaresBestFits" position="200" error="false" numsubpods="3">
+<subpod title="">
+<img src="https://www5b.wolframalpha.com/Calculate/MSP/MSP1880111075d884h6ba7000000i42ebf849725d7h?MSPStoreType=image/gif&s=23" alt="2 x (linear)" title="2 x (linear)" width="78" height="19" type="Default" themes="1,2,3,4,5,6,7,8,9,10,11,12" colorinvertable="true"/>
+    <plaintext>2 x (linear)</plaintext>
+</subpod>
+        <subpod title="">
+<img src="https://www5b.wolframalpha.com/Calculate/MSP/MSP1881111075d884h6ba700000389gcgggbh0bh0hc?MSPStoreType=image/gif&s=23" alt="-0.989094 sin(x) - 2.16121 cos(x) + 4 (periodic)" title="-0.989094 sin(x) - 2.16121 cos(x) + 4 (periodic)" width="321" height="19" type="Default" themes="1,2,3,4,5,6,7,8,9,10,11,12" colorinvertable="true"/>
+            <plaintext>-0.989094 sin(x) - 2.16121 cos(x) + 4 (periodic)</plaintext>
+</subpod>
+        <subpod title="">
+<img src="https://www5b.wolframalpha.com/Calculate/MSP/MSP1882111075d884h6ba700000613fi2i93509i1h4?MSPStoreType=image/gif&s=23" alt="3.5596 log(x) + 1.87402 (logarithmic)" title="3.5596 log(x) + 1.87402 (logarithmic)" width="249" height="19" type="Default" themes="1,2,3,4,5,6,7,8,9,10,11,12" colorinvertable="true"/>
+            <plaintext>3.5596 log(x) + 1.87402 (logarithmic)</plaintext>
+</subpod>
+        <expressiontypes count="3">
+<expressiontype name="Default"/>
+            <expressiontype name="Default"/>
+            <expressiontype name="Default"/>
+</expressiontypes>
+        <infos count="1">
+<info text="log(x) is the natural logarithm">
+<img src="https://www5b.wolframalpha.com/Calculate/MSP/MSP1883111075d884h6ba7000003h4h3790a8gie46c?MSPStoreType=image/gif&s=23" alt="log(x) is the natural logarithm" title="log(x) is the natural logarithm" width="198" height="19"/>
+    <link url="http://reference.wolfram.com/language/ref/Log.html" text="Documentation" title="Mathematica"/>
+    <link url="http://functions.wolfram.com/ElementaryFunctions/Log" text="Properties" title="Wolfram Functions Site"/>
+    <link url="http://mathworld.wolfram.com/NaturalLogarithm.html" text="Definition" title="MathWorld"/>
+</info>
+</infos>
+</pod>
+    <pod title="Fit diagnostics" scanner="DataFitting" id="FitDiagnostics" position="300" error="false" numsubpods="1">
+<subpod title="">
+<img src="https://www5b.wolframalpha.com/Calculate/MSP/MSP1884111075d884h6ba700000209db5cg22i0291h?MSPStoreType=image/gif&s=23" alt=" | AIC | BIC | R^2 | adjusted R^2 logarithmic | 7.34864 | 4.64447 | 0.977654 | 0.955308" title=" | AIC | BIC | R^2 | adjusted R^2 logarithmic | 7.34864 | 4.64447 | 0.977654 | 0.955308" width="428" height="67" type="Grid" themes="1,2,3,4,5,6,7,8,9,10,11,12" colorinvertable="true"/>
+    <plaintext>
+| AIC | BIC | R^2 | adjusted R^2 logarithmic | 7.34864 | 4.64447 | 0.977654 | 0.955308
+</plaintext>
+</subpod>
+        <expressiontypes count="1">
+<expressiontype name="Grid"/>
+</expressiontypes>
+</pod>
+    <pod title="Plot" scanner="DataFitting" id="Plot" position="400" error="false" numsubpods="1">
+<subpod title="">
+<img src="https://www5b.wolframalpha.com/Calculate/MSP/MSP1885111075d884h6ba70000049i15h8g9i37b1aa?MSPStoreType=image/gif&s=23" alt="Plot" title="" width="421" height="217" type="2DMathPlot_1" themes="1,2,3,4,5,6,7,8,9,10,11,12" colorinvertable="true"/>
+    <plaintext/>
+</subpod>
+        <expressiontypes count="1">
+<expressiontype name="Default"/>
+</expressiontypes>
+</pod>
+    <pod title="Plots of the residuals" scanner="DataFitting" id="PlotsOfTheResiduals" position="500" error="false" numsubpods="1">
+<subpod title="">
+<img src="https://www5b.wolframalpha.com/Calculate/MSP/MSP1886111075d884h6ba70000016g664egacfb9b2i?MSPStoreType=image/gif&s=23" alt="Plots of the residuals" title="" width="243" height="155" type="Default" themes="1,2,3,4,5,6,7,8,9,10,11,12" colorinvertable="true"/>
+    <plaintext/>
+</subpod>
+        <expressiontypes count="1">
+<expressiontype name="Default"/>
+</expressiontypes>
+</pod>
+</queryresult>
