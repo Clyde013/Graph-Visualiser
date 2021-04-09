@@ -13,4 +13,5 @@
 .externalNativeBuild
 .cxx
 local.properties
-/python test scripts/coordinate recognition/data
+development materials/coordinate recognition/data/test
+development materials/coordinate recognition/data/train
