@@ -1,6 +1,7 @@
 package com.example.graphvisualiser
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -23,7 +24,11 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.observe
 import androidx.navigation.fragment.findNavController
+import com.example.graphvisualiser.queryingapi.Graph
+import com.example.graphvisualiser.queryingapi.GraphInput
+import com.example.graphvisualiser.queryingapi.RetrieveGraph
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.mlkit.vision.common.InputImage
 import java.io.BufferedInputStream
@@ -52,14 +57,31 @@ class HomeFragment: Fragment(), Executor {
             val bmp = BitmapFactory.decodeStream(bufferedInputStream)
 
             // takePicture()
-            recognizeText(InputImage.fromBitmap(bmp, 0))
+            // recognizeText(InputImage.fromBitmap(bmp, 0))
+
+            /* wolfram alpha api call
+            val retrieveGraph = @SuppressLint("StaticFieldLeak")
+            object : RetrieveGraph(){
+                override fun onResponseReceived(result: Any?) {
+                    myViewModel.graph.postValue(result as Graph)
+                }
+            }
+            val testInputCoords = arrayOf(Pair(1f, 2f), Pair(2f, 4f), Pair(3f, 6f))
+            retrieveGraph.execute(GraphInput(resources.getString(R.string.wolfram_alpha_appID), testInputCoords))
+             */
 
             //imageView.setImageBitmap(plotImageInput(requireContext(), bmp))   // use for testing to see what input image is fed into the model
             //Log.i("model", "predicted output: ${runModel(requireContext(), myViewModel, processImageInput(requireContext(), bmp))}")
         }
 
+        /*
+        myViewModel.graph.observe(viewLifecycleOwner) {
+            Log.i("wolfram api response", "linear: ${it.linear}, periodic: ${it.periodic}, logarithmic: ${it.logarithmic}")
+        }
+        */
+
         /* check for camera permissions */
-        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
             button.isEnabled = false
             Toast.makeText(requireContext(), "Please enable camera permissions and restart the app", Toast.LENGTH_LONG).show()
         }
