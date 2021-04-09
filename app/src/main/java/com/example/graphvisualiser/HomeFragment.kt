@@ -3,11 +3,14 @@ package com.example.graphvisualiser
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.os.Environment
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.util.Size
 import android.view.LayoutInflater
@@ -59,16 +62,17 @@ class HomeFragment: Fragment(), Executor {
             // takePicture()
             // recognizeText(InputImage.fromBitmap(bmp, 0))
 
-            /* wolfram alpha api call
+            /* wolfram alpha api call */
             val retrieveGraph = @SuppressLint("StaticFieldLeak")
             object : RetrieveGraph(){
                 override fun onResponseReceived(result: Any?) {
-                    myViewModel.graph.postValue(result as Graph)
+                    myViewModel.graph.value = result as Graph
                 }
             }
             val testInputCoords = arrayOf(Pair(1f, 2f), Pair(2f, 4f), Pair(3f, 6f))
             retrieveGraph.execute(GraphInput(resources.getString(R.string.wolfram_alpha_appID), testInputCoords))
-             */
+
+            findNavController().navigate(R.id.action_homeFragment_to_displayGraphFragment)
 
             //imageView.setImageBitmap(plotImageInput(requireContext(), bmp))   // use for testing to see what input image is fed into the model
             //Log.i("model", "predicted output: ${runModel(requireContext(), myViewModel, processImageInput(requireContext(), bmp))}")
@@ -96,6 +100,11 @@ class HomeFragment: Fragment(), Executor {
         }, ContextCompat.getMainExecutor(requireContext()))
 
         return root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        cameraProviderFuture.get().unbindAll()
     }
 
     private fun bindPreview(cameraProvider : ProcessCameraProvider) {

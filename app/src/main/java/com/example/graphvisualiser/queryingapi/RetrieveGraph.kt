@@ -3,6 +3,7 @@ package com.example.graphvisualiser.queryingapi
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.AsyncTask
+import android.util.Log
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
 import org.xmlpull.v1.XmlPullParserFactory
@@ -19,19 +20,19 @@ abstract class RetrieveGraph: AsyncTask<GraphInput, Void, Graph>(), ClientInterf
         val factory = XmlPullParserFactory.newInstance()
         val parser = factory.newPullParser()
 
-        var stringUrl = "https://api.wolframalpha.com/v2/query?appid=${graphInput.appID}&input=fit"
+        var stringUrl = "http://api.wolframalpha.com/v2/query?appid=${graphInput.appID}&input=fit"
         for (coordinate in graphInput.coordinates) {
             stringUrl = "$stringUrl+(${coordinate.first},${coordinate.second})"
         }
 
         val url = URL(stringUrl)
         val urlConnection: HttpURLConnection = url.openConnection() as HttpURLConnection
-        try {
+        //try {
             parser.setInput(urlConnection.inputStream, "UTF-8")
-        } catch (e: Exception){
+        /*} catch (e: Exception){
             e.printStackTrace()
             return null
-        }
+        }*/
 
         var eventType = parser.eventType    // event type could be START_TAG or END_TAG, etc.
         val graph = Graph()
