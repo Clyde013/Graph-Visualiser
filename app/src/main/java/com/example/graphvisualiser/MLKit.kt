@@ -24,6 +24,7 @@ import java.io.IOException
 import java.io.InputStreamReader
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import java.util.concurrent.Executor
 
 
 val input_shape = arrayListOf<Int>(50, 50, 1)   // 50x50 single colour channel grayscale image
@@ -137,7 +138,7 @@ fun runModel(context:Context, viewModel: MyViewModel, imageArray: Array<Array<By
 }
 
 /* google provided model for text recognition */
-fun recognizeText(image: InputImage) {
+fun recognizeText(image: InputImage, viewModel: MyViewModel) {
 
     // [START get_detector_default]
     val recognizer = TextRecognition.getClient()
@@ -149,16 +150,21 @@ fun recognizeText(image: InputImage) {
                 // Task completed successfully
                 // [START_EXCLUDE]
                 // [START get_text]
+                var boundingBoxes = ArrayList<Rect>()
                 for (block in visionText.textBlocks) {
+                    Log.i("google model", "identified text block")
                     for (line in block.lines) {
                         for (element in line.elements) {
                             val boundingBox: Rect = element.boundingBox!!
                             val cornerPoints: Array<Point> = element.cornerPoints!!
                             val text = element.text
-                            Log.i("google model", "identified text $text at ${cornerPoints[0].toString()}")
+                            Log.i("google model", "identified text $text at ${cornerPoints.size} corner points. first corner: ${cornerPoints[0].toString()}")
+                            boundingBoxes.add(boundingBox)
                         }
                     }
                 }
+                viewModel.boundingBoxes.value = boundingBoxes
+                Log.i("google model", "all text identified")
                 // [END get_text]
                 // [END_EXCLUDE]
             }

@@ -1,23 +1,16 @@
 package com.example.graphvisualiser
 
 import android.Manifest
-import android.annotation.SuppressLint
-import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.media.ExifInterface
 import android.os.Bundle
 import android.os.Environment
-import android.os.Handler
-import android.os.Looper
-import android.util.Log
 import android.util.Size
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
-import android.widget.ImageView
 import android.widget.Toast
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -27,11 +20,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.observe
 import androidx.navigation.fragment.findNavController
-import com.example.graphvisualiser.queryingapi.Graph
-import com.example.graphvisualiser.queryingapi.GraphInput
-import com.example.graphvisualiser.queryingapi.RetrieveGraph
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.mlkit.vision.common.InputImage
 import java.io.BufferedInputStream
@@ -55,14 +44,15 @@ class HomeFragment: Fragment(), Executor {
 
         val button = root.findViewById<ImageButton>(R.id.photoButton)
         button.setOnClickListener {
-            val bm: InputStream = resources.openRawResource(R.raw.justin_eqn)
+            val bm: InputStream = resources.openRawResource(R.raw.justin_coords)
             val bufferedInputStream = BufferedInputStream(bm)
             val bmp = BitmapFactory.decodeStream(bufferedInputStream)
 
             // takePicture()
-            // recognizeText(InputImage.fromBitmap(bmp, 0))
 
-            /* wolfram alpha api call */
+            recognizeText(InputImage.fromBitmap(bmp, 90), myViewModel)
+
+            /* wolfram alpha api call
             val retrieveGraph = @SuppressLint("StaticFieldLeak")
             object : RetrieveGraph(){
                 override fun onResponseReceived(result: Any?) {
@@ -73,6 +63,7 @@ class HomeFragment: Fragment(), Executor {
             retrieveGraph.execute(GraphInput(resources.getString(R.string.wolfram_alpha_appID), testInputCoords))
 
             findNavController().navigate(R.id.action_homeFragment_to_displayGraphFragment)
+            */
 
             //imageView.setImageBitmap(plotImageInput(requireContext(), bmp))   // use for testing to see what input image is fed into the model
             //Log.i("model", "predicted output: ${runModel(requireContext(), myViewModel, processImageInput(requireContext(), bmp))}")
