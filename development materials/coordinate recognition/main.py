@@ -1,11 +1,12 @@
 import tensorflow as tf
 import numpy as np
 from file_manager import *
-from image_processing import image_processing
+from image_processing import image_processing_rank_filter as rf
 import one_hot
 import matplotlib.pyplot as plt
 import argparse
 import math
+from image_processing import image_processing_region_segmentation as rs
 
 gpus = tf.config.experimental.list_physical_devices('GPU')
 if gpus:
@@ -55,7 +56,7 @@ def train_model():
                   loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
                   metrics=['accuracy'])
 
-    model.fit(train_images, train_labels, epochs=3)
+    model.fit(train_images, train_labels, epochs=5)
 
     test_loss, test_acc = model.evaluate(test_images, test_labels, verbose=2)
     print('\nTest accuracy:', test_acc, '\n')
@@ -68,7 +69,7 @@ def train_model():
 
 
 # default values
-img_path = 'data/justin_pi.jpg'
+img_path = 'data/justin_coords_cropped.jpg'
 threshold = 0.9  # threshold for determining pixel as white or black
 model_path = 'saved_model/cnn_model_96.82'
 cols = 4
@@ -77,9 +78,9 @@ parser = argparse.ArgumentParser(description='Train or test models.')
 parser.add_argument('--train', type=bool, help='Set true to retrain a new model', default=False)
 parser.add_argument('--threshold', type=float, help='Threshold used to determine whether a pixel is white or black',
                     default=threshold)
-parser.add_argument('--img_path', type=str, help='Filepath to image to run model on. Default is "data/justin2.jpg"',
+parser.add_argument('--img_path', type=str, help='Filepath to image to run model on. Default is "data/justin_coords_cropped.jpg"',
                     default=img_path)
-parser.add_argument('--model_path', type=str, help='Filepath to model to run. Default is "saved_model/model_85.07"',
+parser.add_argument('--model_path', type=str, help='Filepath to model to run. Default is "saved_model/cnn_model_96.82"',
                     default=model_path)
 parser.add_argument('--cols', type=int, help='Number of columns used to display inference results.',
                     default=cols)
@@ -101,7 +102,7 @@ saved_model = tf.keras.models.load_model(model_path, compile=False)
 saved_model.summary()  # print loaded model summary
 
 
-def load_image_into_input(images):
+def load_image_into_input_rank_filter(images):
     # step -1: crop borders of image to minimise white borders
     # step 0: resize image to fit 50x50
     # step 1: cast 0...255 range to 0...1 range for neural net
@@ -111,14 +112,14 @@ def load_image_into_input(images):
     display_images = np.empty((len(images), 50, 50))
     input_images = np.empty((len(images), 50, 50, 1))
     for i in range(len(images)):
-        grayscale_image = image_processing.load_image_as_grayscale(images[i])
-        subtracted_image = image_processing.background_subtract_grayscale(grayscale_image).astype(
+        grayscale_image = rf.load_image_as_grayscale(images[i])
+        subtracted_image = rf.background_subtract_grayscale(grayscale_image).astype(
             np.float) / 255  # convert to 0...1 range
-        binarised_image = image_processing.binarise_grayscale(subtracted_image, threshold, True).astype(np.uint8)
-        cropped_image = image_processing.crop_borders(binarised_image)
-        resized_image = image_processing.resize_image(cropped_image, 50)
+        binarised_image = rf.binarise_grayscale(subtracted_image, threshold, True).astype(np.uint8)
+        cropped_image = rf.crop_borders(binarised_image)
+        resized_image = rf.resize_image(cropped_image, 50)
         # remove strange in between values that pop up during resizing
-        binarised_resized_image = image_processing.binarise_grayscale(resized_image, threshold, False)
+        binarised_resized_image = rf.binarise_grayscale(resized_image, threshold, False)
         # reshaped_image = tf.reshape(binarised_resized_image, (2500,))  # flatten
         display_images[i] = binarised_resized_image
         input_images[i] = np.array(binarised_resized_image).reshape((50, 50, 1))
@@ -126,11 +127,35 @@ def load_image_into_input(images):
     return display_images, input_images
 
 
-display_images, input_images = load_image_into_input([img_path, 'data/justin_1.jpg', 'data/justin_2.jpg',
+def load_image_into_input_region_segmentation(image_filepath):
+    # this function can take a single image and extract all individual characters
+    img = rs.load_image_as_grayscale(image_filepath)
+    characters = rs.region_segmentation(img)
+
+    display_images = np.empty((len(characters), 50, 50))
+    input_images = np.empty((len(characters), 50, 50, 1))
+
+    for i in range(len(characters)):
+        cropped_image = rs.crop_borders(characters[i])
+        resized_image = rs.resize_image(cropped_image, 50)
+        # remove strange in between values that pop up during resizing
+        binarised_resized_image = rs.binarise_grayscale(resized_image, threshold)
+
+        display_images[i] = binarised_resized_image
+        input_images[i] = np.array(binarised_resized_image).astype(np.float32).reshape((50, 50, 1))
+
+    return display_images, input_images
+
+'''
+display_images, input_images = load_image_into_input_rank_filter([img_path, 'data/justin_1.jpg', 'data/justin_2.jpg',
                                                       'data/justin_3.jpg', 'data/another_justin_4.jpg',
                                                       'data/justin_5.jpg', 'data/justin_8.jpg',
                                                       'data/another_justin_9.jpg', 'data/justin_0.jpg',
                                                       'data/justin_beta.jpg'])
+'''
+
+display_images, input_images = load_image_into_input_region_segmentation(img_path)
+print(display_images)
 
 predictions = saved_model.predict(input_images)
 rows = math.ceil(len(display_images) / cols)
