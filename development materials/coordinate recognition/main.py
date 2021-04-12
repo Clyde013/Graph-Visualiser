@@ -71,7 +71,7 @@ def train_model():
 # default values
 img_path = 'data/justin_coords_cropped.jpg'
 threshold = 0.9  # threshold for determining pixel as white or black
-model_path = 'saved_model/cnn_model_96.82'  # 95.76 includes commas
+model_path = 'saved_model/cnn_model_96.82'  # 96.82 does not include commas
 cols = 10
 
 parser = argparse.ArgumentParser(description='Train or test models.')
@@ -130,7 +130,7 @@ def load_image_into_input_rank_filter(images):
 def load_image_into_input_region_segmentation(image_filepath):
     # this function can take a single image and extract all individual characters
     img = rs.load_image_as_grayscale(image_filepath)
-    characters = rs.region_segmentation(img)
+    characters, comma_indices = rs.region_segmentation(img)
 
     display_images = np.empty((len(characters), 50, 50))
     input_images = np.empty((len(characters), 50, 50, 1))
@@ -144,6 +144,7 @@ def load_image_into_input_region_segmentation(image_filepath):
         display_images[i] = binarised_resized_image
         input_images[i] = np.array(binarised_resized_image).astype(np.float32).reshape((50, 50, 1))
 
+    # return comma_indices too!
     return display_images, input_images
 
 

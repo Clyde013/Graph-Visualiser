@@ -68,11 +68,8 @@ def region_segmentation(image):
         result += dilat
 
     labeled, nr_objects = ndi.label(result > 0, structure=ndi.generate_binary_structure(2, 2))
-    '''
-    prev_topleft = (-1, -1)
-    prev_height = -1
+
     comma_indices = list()
-    '''
     running_height = list()
     for label in range(1, nr_objects + 1):
         ys, xs = np.where(labeled == label)
@@ -84,7 +81,7 @@ def region_segmentation(image):
 
         diff = abs(height - median_height)
         if diff >= median_height * 1 / 2:
-            print("comma at index ", label - 1)
+            comma_indices.append(label-1)
             running_height.pop()
         # height = max(height, math.ceil(median_height * 3/5))
 
@@ -138,7 +135,7 @@ def region_segmentation(image):
     plt.show()
     '''
 
-    return characters
+    return characters, comma_indices
 
 
 def resize_image(image, box_size):  # box size should be 50, consistent with what was used
