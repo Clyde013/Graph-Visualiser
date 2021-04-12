@@ -46,7 +46,7 @@ fun downloadModel(viewModel: MyViewModel?) {
             }
 }
 
-fun processImageInput(context: Context, image: Bitmap): Array<Array<ByteArray>>?{    // start python pipeline
+fun processImageInput(context: Context, image: Bitmap): Pair<Array<Array<Array<FloatArray>>>, Array<Int>>?{    // start python pipeline
     if (!Python.isStarted()){
         Python.start(AndroidPlatform(context))
     }
@@ -60,9 +60,10 @@ fun processImageInput(context: Context, image: Bitmap): Array<Array<ByteArray>>?
     image.recycle()
 
     return try{
-        val imageDimensions = Array(input_shape[0]) {Array(input_shape[1]) { ByteArray(input_shape[2]) } }    // init 3d bytearray (50x50 dims and 1 grayscale channel)
-        val imageArray = mainModule.callAttr("load_image_into_input", byteArray).toJava(imageDimensions.javaClass)
-        imageArray
+        val output = mainModule.callAttr("load_image_into_input", byteArray).asList()
+        val imageArray = output[0].toJava(Array<Array<Array<FloatArray>>>::class.java)   // for some reason it returns the np array as dtype float although i specified np.byte. No harm done it reduces conversions in the long run
+        val commaIndices = output[1].toJava(Array<Int>::class.java)
+        Pair(imageArray, commaIndices)
     }catch(e: PyException){
         Toast.makeText(context, "something went wrong processing image input :(", Toast.LENGTH_SHORT).show()
         null
@@ -92,7 +93,7 @@ fun plotImageInput(context: Context, image: Bitmap): Bitmap?{    // start python
     }
 }
 
-fun runModel(context:Context, viewModel: MyViewModel, imageArray: Array<Array<ByteArray>>?): String?{
+fun runModel(context:Context, viewModel: MyViewModel, imageArray: Array<Array<FloatArray>>?): String?{
     if (imageArray == null){
         return null
     }
@@ -103,8 +104,8 @@ fun runModel(context:Context, viewModel: MyViewModel, imageArray: Array<Array<By
 
         for (row in imageArray){
             for (col in row){
-                for (byte in col){  // processing outputs a byte array of 1 and 0
-                    input.putFloat(byte.toFloat())  // but model accepts 1f and 0f values so convert to float
+                for (float in col){  // processing outputs a byte array of 1 and 0
+                    input.putFloat(float)
                 }
             }
         }
