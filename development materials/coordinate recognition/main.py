@@ -71,8 +71,8 @@ def train_model():
 # default values
 img_path = 'data/justin_coords_cropped.jpg'
 threshold = 0.9  # threshold for determining pixel as white or black
-model_path = 'saved_model/cnn_model_96.82'
-cols = 4
+model_path = 'saved_model/cnn_model_96.82'  # 95.76 includes commas
+cols = 10
 
 parser = argparse.ArgumentParser(description='Train or test models.')
 parser.add_argument('--train', type=bool, help='Set true to retrain a new model', default=False)
@@ -139,25 +139,26 @@ def load_image_into_input_region_segmentation(image_filepath):
         cropped_image = rs.crop_borders(characters[i])
         resized_image = rs.resize_image(cropped_image, 50)
         # remove strange in between values that pop up during resizing
-        binarised_resized_image = rs.binarise_grayscale(resized_image, threshold)
+        binarised_resized_image = rs.binarise_grayscale(resized_image)
 
         display_images[i] = binarised_resized_image
         input_images[i] = np.array(binarised_resized_image).astype(np.float32).reshape((50, 50, 1))
 
     return display_images, input_images
 
+
 '''
-display_images, input_images = load_image_into_input_rank_filter([img_path, 'data/justin_1.jpg', 'data/justin_2.jpg',
-                                                      'data/justin_3.jpg', 'data/another_justin_4.jpg',
-                                                      'data/justin_5.jpg', 'data/justin_8.jpg',
-                                                      'data/another_justin_9.jpg', 'data/justin_0.jpg',
+display_images, input_images = load_image_into_input_rank_filter([img_path, 'data/justin_0.jpg',
                                                       'data/justin_beta.jpg'])
-'''
-
-display_images, input_images = load_image_into_input_region_segmentation(img_path)
-print(display_images)
-
 predictions = saved_model.predict(input_images)
+'''
+display_images, input_images = load_image_into_input_region_segmentation(img_path)
+
+model_predictions = saved_model.predict(input_images)
+predictions = list()
+for i in range(len(model_predictions)):
+    predictions.append(classes[np.argmax(model_predictions[i])])
+
 rows = math.ceil(len(display_images) / cols)
 fig, axes = plt.subplots(rows, cols)
 
@@ -166,7 +167,9 @@ fig.subplots_adjust(hspace=0.2)
 for i, ax in enumerate(axes.flatten()):
     if i < len(display_images):
         ax.imshow(display_images[i], vmin=0, vmax=1, cmap=plt.cm.gray)
-        ax.set_title('predicted: ' + classes[np.argmax(predictions[i])])  # decode from bytes object
+        title = str.format("{:d}: {:s}", i, predictions[i])
+        ax.set_title(title)  # decode from bytes object
+        #ax.set_title(classes[np.argmax(predictions[i])])
         ax.axis('off')
 
 plt.show()
