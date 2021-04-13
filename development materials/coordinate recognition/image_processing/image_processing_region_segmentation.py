@@ -14,6 +14,7 @@ from skimage.segmentation import watershed
 
 from scipy import ndimage as ndi
 
+import functools
 import math
 
 
@@ -38,20 +39,11 @@ def region_segmentation(image):
 
     # label only works on filled segmentation
     labeled_characters, _ = ndi.label(filled_segmentation, structure=ndi.generate_binary_structure(2, 2))
-    characters = list()
 
     # parameters
     max_dilat = 5  # dilation (in number of pixels) for a small object
     sz_small = 100  # size of a small object (max dilated)
     sz_big = 10000  # size of a big object (not dilated)
-    '''
-    for i in range(1, labeled_characters.max() + 1):
-        area = np.sum(labeled_characters == i)
-        if area < sz_small:
-            sz_small = area
-        elif area > sz_big:
-            sz_big = area
-    '''
     result = np.zeros_like(labeled_characters)
 
     # for each detected object
@@ -69,6 +61,9 @@ def region_segmentation(image):
 
     labeled, nr_objects = ndi.label(result > 0, structure=ndi.generate_binary_structure(2, 2))
 
+    feature_grouping_map = np.zeros_like(segmentation)  # use this to group coordinates as features
+
+    characters_info = list()
     comma_indices = list()
     running_height = list()
     for label in range(1, nr_objects + 1):
@@ -81,30 +76,16 @@ def region_segmentation(image):
 
         diff = abs(height - median_height)
         if diff >= median_height * 1 / 2:
-            comma_indices.append(label-1)
+            comma_indices.append(label - 1)
             running_height.pop()
-        # height = max(height, math.ceil(median_height * 3/5))
 
-        '''
-        # check if character is a comma
-        if prev_topleft == (-1, -1) and prev_height == -1:
-            prev_topleft = topleft
-            prev_height = height
-        elif prev_topleft[1] + height * 5/10 < topleft[1] < prev_topleft[1] + height:
-            # assuming that a comma will be 50% or lower from the bottom of the previous character but not below it
-            comma_index = label - 1
-            print("comma detected at index", comma_index)
-            comma_indices.append(comma_index)
-            prev_topleft = topleft
-            prev_height = height
-        else:
-            prev_topleft = topleft
-            prev_height = height
-        '''
         # instead of np.reshape which will throw error since our values will not be perfectly square shape
         # (e.g. open bracket '(' ) and the number of values that were labelled may be less than shape[0]*shape[1]
         fill = np.zeros(shape=(height, width))
         fill[:height, :width] = segmentation[topleft[1]:topleft[1] + height, topleft[0]: topleft[0] + width] - 1
+
+        # mark character bounding boxes and add padding to the width so they can overlap with neighbouring characters
+        feature_grouping_map[topleft[1]:topleft[1] + height, max(topleft[0] - math.ceil(width * 1.3), 0): min(topleft[0] + math.ceil(width * 1.3), len(feature_grouping_map[0]))] = 1
 
         # width: 4 - 1 = 3. set width to 3+1 = 4
         # 0 1 2 3 4 5   (size: 6)
@@ -118,24 +99,31 @@ def region_segmentation(image):
         plt.show()
         '''
 
-        characters.append(fill)
+        characters_info.append((topleft[0], topleft[1], fill))
 
-    '''
-    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(10, 5))
+    labeled_coord_groups, number_of_coords = ndi.label(feature_grouping_map)
+    characters = [[] for i in range(number_of_coords)]
 
-    ax1.imshow(characters[0], cmap=plt.cm.gray)
-    ax1.axis('off')
+    for character_info in characters_info:
+        x, y, character = character_info
+        characters[labeled_coord_groups[y][x]-1].append((x, character))
 
-    ax2.imshow(characters[1], cmap=plt.cm.gray)
-    ax2.axis('off')
+    result = list()
+    for coordinate in characters:
+        if coordinate:  # if coordinate not empty
+            coordinate.sort(key=functools.cmp_to_key(comparator))
+            for character in coordinate:
+                result.append(character[1])
 
-    ax3.imshow(characters[2], cmap=plt.cm.gray)
-    ax3.axis('off')
+    return result, comma_indices
 
-    plt.show()
-    '''
 
-    return characters, comma_indices
+def comparator(a, b):
+    if a[0] < b[0]:   # character a to the left of b
+        return -1
+    else:
+        return 1
+
 
 
 def resize_image(image, box_size):  # box size should be 50, consistent with what was used
