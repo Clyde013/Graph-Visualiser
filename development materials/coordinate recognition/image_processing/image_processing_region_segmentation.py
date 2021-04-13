@@ -125,7 +125,6 @@ def comparator(a, b):
         return 1
 
 
-
 def resize_image(image, box_size):  # box size should be 50, consistent with what was used
     return transform.resize(image, (box_size, box_size), anti_aliasing=False, preserve_range=True)
 

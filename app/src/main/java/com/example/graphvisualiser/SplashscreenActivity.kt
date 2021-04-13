@@ -62,7 +62,7 @@ class SplashscreenActivity : AppCompatActivity() {
         scaleAnimatorSet.startDelay = 50
         scaleAnimatorSet.start()
 
-        myViewModel.modelPath.observe(this) {
+        myViewModel.modelFile.observe(this) {
             if (it != null) {   // model has been downloaded
                 loadingTextView.text = "Checking for permissions"
                 Handler(Looper.myLooper()!!).postDelayed({

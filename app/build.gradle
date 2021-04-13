@@ -64,6 +64,8 @@ dependencies {
 
     implementation 'pl.droidsonroids.gif:android-gif-drawable:1.2.17'
     implementation 'org.jsoup:jsoup:1.11.2'
+    implementation 'com.google.code.gson:gson:2.8.6'
+
 
     implementation 'com.google.android.gms:play-services-mlkit-text-recognition:16.1.3'
 

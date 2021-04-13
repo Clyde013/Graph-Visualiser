@@ -18,10 +18,7 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.Text
 import com.google.mlkit.vision.text.TextRecognition
 import org.tensorflow.lite.Interpreter
-import java.io.BufferedReader
-import java.io.ByteArrayOutputStream
-import java.io.IOException
-import java.io.InputStreamReader
+import java.io.*
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.concurrent.Executor
@@ -41,12 +38,12 @@ fun downloadModel(viewModel: MyViewModel?) {
             .addOnCompleteListener { customModel ->
                 customModel.addOnSuccessListener {
                     // Download complete or already downloaded. Enable ML features
-                    viewModel?.modelPath?.postValue(it.file)
+                    viewModel?.modelFile?.postValue(it.file)
                 }
             }
 }
 
-fun processImageInput(context: Context, image: Bitmap): Pair<Array<Array<Array<FloatArray>>>, Array<Int>>?{    // start python pipeline
+fun processImageInput(context: Context, image: Bitmap): Pair<Array<Array<Array<Array<FloatArray>>>>, Array<Int>>?{    // start python pipeline
     if (!Python.isStarted()){
         Python.start(AndroidPlatform(context))
     }
@@ -61,7 +58,7 @@ fun processImageInput(context: Context, image: Bitmap): Pair<Array<Array<Array<F
 
     return try{
         val output = mainModule.callAttr("load_image_into_input", byteArray).asList()
-        val imageArray = output[0].toJava(Array<Array<Array<FloatArray>>>::class.java)   // for some reason it returns the np array as dtype float although i specified np.byte. No harm done it reduces conversions in the long run
+        val imageArray = output[0].toJava(Array<Array<Array<Array<FloatArray>>>>::class.java)   // for some reason it returns the np array as dtype float although i specified np.byte. No harm done it reduces conversions in the long run
         val commaIndices = output[1].toJava(Array<Int>::class.java)
         Pair(imageArray, commaIndices)
     }catch(e: PyException){
@@ -93,46 +90,44 @@ fun plotImageInput(context: Context, image: Bitmap): Bitmap?{    // start python
     }
 }
 
-fun runModel(context:Context, viewModel: MyViewModel, imageArray: Array<Array<FloatArray>>?): String?{
+fun runModel(context:Context, modelFile: File, imageArray: Array<Array<FloatArray>>?): String?{
     if (imageArray == null){
         return null
     }
 
-    if (viewModel.modelPath.value != null){
-        val interpreter = Interpreter(viewModel.modelPath.value!!)
-        val input = ByteBuffer.allocateDirect(input_shape[0] * input_shape[1] * input_shape[2] * 4).order(ByteOrder.nativeOrder())   // *4 because using inputtype float32
+    val interpreter = Interpreter(modelFile)
+    val input = ByteBuffer.allocateDirect(input_shape[0] * input_shape[1] * input_shape[2] * 4).order(ByteOrder.nativeOrder())   // *4 because using inputtype float32
 
-        for (row in imageArray){
-            for (col in row){
-                for (float in col){  // processing outputs a byte array of 1 and 0
-                    input.putFloat(float)
-                }
+    for (row in imageArray){
+        for (col in row){
+            for (float in col){  // processing outputs a byte array of 1 and 0
+                input.putFloat(float)
             }
         }
+    }
 
-        val bufferSize = output_shape[0] * java.lang.Float.SIZE / java.lang.Byte.SIZE
-        val modelOutput = ByteBuffer.allocateDirect(bufferSize).order(ByteOrder.nativeOrder())
-        interpreter.run(input, modelOutput)
+    val bufferSize = output_shape[0] * java.lang.Float.SIZE / java.lang.Byte.SIZE
+    val modelOutput = ByteBuffer.allocateDirect(bufferSize).order(ByteOrder.nativeOrder())
+    interpreter.run(input, modelOutput)
 
-        modelOutput.rewind()
-        val probabilities = modelOutput.asFloatBuffer()
-        try {
-            val reader = BufferedReader(InputStreamReader(context.resources.openRawResource(R.raw.classes)))
-            var highestProbability = -1f
-            var predictedLabel = ""
-            for (i in 0 until probabilities.capacity()) {
-                val label: String = reader.readLine()
-                val probability = probabilities.get(i)
-                if (probability > highestProbability){
-                    highestProbability = probability
-                    predictedLabel = label
-                }
+    modelOutput.rewind()
+    val probabilities = modelOutput.asFloatBuffer()
+    try {
+        val reader = BufferedReader(InputStreamReader(context.resources.openRawResource(R.raw.classes)))
+        var highestProbability = -1f
+        var predictedLabel = ""
+        for (i in 0 until probabilities.capacity()) {
+            val label: String = reader.readLine()
+            val probability = probabilities.get(i)
+            if (probability > highestProbability){
+                highestProbability = probability
+                predictedLabel = label
             }
-            return predictedLabel
-        } catch (e: IOException){
-            Log.e("running inference model error", "class tags not found")
-            return null
         }
+        return predictedLabel
+    } catch (e: IOException){
+        Log.e("running inference model error", "class tags not found")
+        return null
     }
 
     return null
@@ -151,7 +146,7 @@ fun recognizeText(image: InputImage, viewModel: MyViewModel) {
                 // Task completed successfully
                 // [START_EXCLUDE]
                 // [START get_text]
-                var boundingBoxes = ArrayList<Rect>()
+                val boundingBitmaps = ArrayList<Bitmap>()
                 for (block in visionText.textBlocks) {
                     Log.i("google model", "identified text block")
                     for (line in block.lines) {
@@ -160,11 +155,11 @@ fun recognizeText(image: InputImage, viewModel: MyViewModel) {
                             val cornerPoints: Array<Point> = element.cornerPoints!!
                             val text = element.text
                             Log.i("google model", "identified text $text at ${cornerPoints.size} corner points. first corner: ${cornerPoints[0].toString()}")
-                            boundingBoxes.add(boundingBox)
+                            boundingBitmaps.add(Bitmap.createBitmap(image.bitmapInternal!!, boundingBox.left, boundingBox.top, boundingBox.width(), boundingBox.height()))
                         }
                     }
                 }
-                viewModel.boundingBoxes.value = boundingBoxes
+                viewModel.boundingBoxes.value = boundingBitmaps
                 Log.i("google model", "all text identified")
                 // [END get_text]
                 // [END_EXCLUDE]

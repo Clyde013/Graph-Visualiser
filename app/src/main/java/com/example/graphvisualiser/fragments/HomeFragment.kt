@@ -1,6 +1,8 @@
-package com.example.graphvisualiser
+package com.example.graphvisualiser.fragments
 
 import android.Manifest
+import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -8,7 +10,6 @@ import android.graphics.Matrix
 import android.os.Bundle
 import android.os.Environment
 import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.util.Size
 import android.view.LayoutInflater
@@ -21,11 +22,17 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.fragment.findNavController
+import com.example.graphvisualiser.*
+import com.example.graphvisualiser.R
+import com.example.graphvisualiser.model.ModelInferenceIntentService
+import com.example.graphvisualiser.model.ModelInferenceResultReceiver
 import com.google.common.util.concurrent.ListenableFuture
+import com.google.mlkit.vision.common.InputImage
 import java.io.BufferedInputStream
 import java.io.File
 import java.io.InputStream
@@ -54,7 +61,7 @@ class HomeFragment: Fragment(), Executor {
             var bmp = BitmapFactory.decodeStream(bufferedInputStream)
             //bmp = rotateImage(bmp, 90f)
 
-            // takePicture()
+            takePicture()
 
             //recognizeText(InputImage.fromBitmap(bmp, 90), myViewModel)
 
@@ -68,33 +75,12 @@ class HomeFragment: Fragment(), Executor {
             val testInputCoords = arrayOf(Pair(1f, 2f), Pair(2f, 4f), Pair(3f, 6f))
             retrieveGraph.execute(GraphInput(resources.getString(R.string.wolfram_alpha_appID), testInputCoords))
             */
-            findNavController().navigate(R.id.action_homeFragment_to_displayGraphFragment)
+            // findNavController().navigate(R.id.action_homeFragment_to_displayGraphFragment)
 
 
             //imageView.setImageBitmap(plotImageInput(requireContext(), bmp))   // use for testing to see what input image is fed into the model
 
-            val output = processImageInput(requireContext(), bmp)
-            val characters = output?.first
-            val commaIndices = output?.second
-            Log.i("model", "${commaIndices?.get(0)}")
-            /*
-            if (characters != null && commaIndices != null) {
-                for (i in 0..characters.size) {
-                    Log.i(
-                        "model", "predicted output at index $i: ${
-                            runModel(
-                                requireContext(),
-                                myViewModel,
-                                characters[i]
-                            )
-                        }"
-                    )
-                }
-                Log.i("model", "predicted commas: $commaIndices")
-            } else {
-                Log.i("model", "no characters detected")
-            }
-            */
+
         }
 
         /*
@@ -114,14 +100,14 @@ class HomeFragment: Fragment(), Executor {
         }
 
         /* camera setup */
-        /*
+
         previewView = root.findViewById(R.id.previewView)
 
         cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
         cameraProviderFuture.addListener(Runnable {
             val cameraProvider = cameraProviderFuture.get()
             bindPreview(cameraProvider)
-        }, ContextCompat.getMainExecutor(requireContext()))*/
+        }, ContextCompat.getMainExecutor(requireContext()))
 
         return root
     }
@@ -139,6 +125,7 @@ class HomeFragment: Fragment(), Executor {
         cameraProviderFuture.get().unbindAll()
     }
 
+    @SuppressLint("UnsafeExperimentalUsageError")
     private fun bindPreview(cameraProvider: ProcessCameraProvider) {
         val preview : Preview = Preview.Builder()
             .build()
@@ -158,7 +145,7 @@ class HomeFragment: Fragment(), Executor {
             ContextCompat.getMainExecutor(requireContext()),
             ImageAnalysis.Analyzer { image ->
                 val rotationDegrees = image.imageInfo.rotationDegrees
-                // insert your code here.
+                recognizeText(InputImage.fromMediaImage(image.image, rotationDegrees), myViewModel)
             })
 
         imageCapture = ImageCapture.Builder()
@@ -175,22 +162,34 @@ class HomeFragment: Fragment(), Executor {
     }
 
     private fun takePicture() {
-        val outputFileOptions = ImageCapture.OutputFileOptions.Builder(
-            File(
-                requireContext().getExternalFilesDir(
-                    Environment.DIRECTORY_PICTURES
-                ), "image"
-            )
-        ).build()
+        val outputFile = File(
+            requireContext().getExternalFilesDir(
+                Environment.DIRECTORY_PICTURES
+            ), "image"
+        )
+        val outputFileOptions = ImageCapture.OutputFileOptions.Builder(outputFile).build()
         imageCapture.takePicture(outputFileOptions, this,
             object : ImageCapture.OnImageSavedCallback {
                 override fun onError(error: ImageCaptureException) {
                     // insert your code here.
+                    requireActivity().runOnUiThread {
+                        Toast.makeText(
+                            requireContext(),
+                            "Something went wrong taking a picture :(",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
 
                 override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                    // insert your code here.
-                    findNavController().navigate(R.id.action_homeFragment_to_displayGraphFragment)
+                    requireActivity().runOnUiThread {
+                        Log.i("model", outputFile.path)
+                        val bundle = bundleOf("bmpFile" to outputFile)
+                        findNavController().navigate(
+                            R.id.action_homeFragment_to_displayGraphFragment,
+                            bundle
+                        )
+                    }
                 }
             })
     }

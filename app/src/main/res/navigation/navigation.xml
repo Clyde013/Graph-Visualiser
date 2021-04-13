@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/displayGraphFragment"
-        android:name="com.example.graphvisualiser.DisplayGraphFragment"
+        android:name="com.example.graphvisualiser.fragments.DisplayGraphFragment"
         android:label="Display Graph"
         tools:layout="@layout/fragment_display_graph">
         <action
@@ -22,7 +22,7 @@
     </fragment>
     <fragment
         android:id="@+id/navigation_home"
-        android:name="com.example.graphvisualiser.HomeFragment"
+        android:name="com.example.graphvisualiser.fragments.HomeFragment"
         android:label="Home"
         tools:layout="@layout/fragment_home">
         <action
@@ -36,7 +36,7 @@
 
     <fragment
         android:id="@+id/navigation_preferences"
-        android:name="com.example.graphvisualiser.PreferencesFragment"
+        android:name="com.example.graphvisualiser.fragments.PreferencesFragment"
         android:label="Settings"
         tools:layout="@layout/fragment_preferences"/>
 </navigation>

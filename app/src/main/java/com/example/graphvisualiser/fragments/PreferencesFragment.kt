@@ -1,4 +1,4 @@
-package com.example.graphvisualiser
+package com.example.graphvisualiser.fragments
 
 import android.content.Context
 import android.os.Bundle
@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentContainerView
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
+import com.example.graphvisualiser.R
 
 class PreferencesFragment: Fragment() {
     override fun onCreateView(

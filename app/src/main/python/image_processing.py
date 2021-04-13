@@ -9,6 +9,7 @@ from skimage.segmentation import watershed
 
 from scipy import ndimage as ndi
 
+import functools
 import math
 
 
@@ -33,7 +34,6 @@ def region_segmentation(image):
 
     # label only works on filled segmentation
     labeled_characters, _ = ndi.label(filled_segmentation, structure=ndi.generate_binary_structure(2, 2))
-    characters = list()
 
     # parameters
     max_dilat = 5  # dilation (in number of pixels) for a small object
@@ -56,29 +56,63 @@ def region_segmentation(image):
 
     labeled, nr_objects = ndi.label(result > 0, structure=ndi.generate_binary_structure(2, 2))
 
-    comma_indices = list()
+    feature_grouping_map = np.zeros_like(segmentation)  # use this to group coordinates as features
+
+    characters_info = list()
     running_height = list()
     for label in range(1, nr_objects + 1):
         ys, xs = np.where(labeled == label)
         topleft = (xs.min(), ys.min())
         width, height = xs.max() - xs.min() + 1, ys.max() - ys.min() + 1
 
+        comma = False
         running_height.append(height)
         median_height = np.median(running_height)
 
-        diff = abs(height - median_height)  # determine its comma'nality (see what i did there) by comparing to
-        if diff >= median_height * 1 / 2:  # median of previous characters
-            comma_indices.append(label - 1)
+        diff = abs(height - median_height)
+        if diff >= median_height * 1 / 2:
             running_height.pop()
+            comma = True
 
         # instead of np.reshape which will throw error since our values will not be perfectly square shape
         # (e.g. open bracket '(' ) and the number of values that were labelled may be less than shape[0]*shape[1]
         fill = np.zeros(shape=(height, width))
         fill[:height, :width] = segmentation[topleft[1]:topleft[1] + height, topleft[0]: topleft[0] + width] - 1
 
-        characters.append(fill)
+        # mark character bounding boxes and add padding to the width so they can overlap with neighbouring characters
+        feature_grouping_map[topleft[1]:topleft[1] + height, max(topleft[0] - math.ceil(width * 1.3), 0): min(topleft[0] + math.ceil(width * 1.3), len(feature_grouping_map[0]))] = 1
 
-    return characters, comma_indices
+        characters_info.append((topleft[0], topleft[1], fill, comma))
+
+    labeled_coord_groups, number_of_coords = ndi.label(feature_grouping_map)
+    characters = [[] for i in range(number_of_coords)]
+
+    for character_info in characters_info:
+        x, y, character, comma = character_info
+        characters[labeled_coord_groups[y][x]-1].append((x, character, comma))
+
+    result = []
+    comma_indices = list()
+    index = 0
+    for coordinate in characters:
+        if coordinate:  # if coordinate not empty
+            coordinate.sort(key=functools.cmp_to_key(comparator))
+            coordinate_characters = []
+            for character in coordinate:
+                coordinate_characters.append(character[1])
+                if character[2]:
+                    comma_indices.append(index)
+                index += 1
+            result.append(coordinate_characters)
+
+    return result, comma_indices
+
+
+def comparator(a, b):
+    if a[0] < b[0]:   # character a to the left of b
+        return -1
+    else:
+        return 1
 
 
 def resize_image(image, box_size):  # box size should be 50, consistent with what was used
