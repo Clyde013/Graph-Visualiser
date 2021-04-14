@@ -2,14 +2,14 @@ package com.example.graphvisualiser.fragments
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
+import android.media.ExifInterface
+import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
-import android.os.Handler
 import android.util.Log
 import android.util.Size
 import android.view.LayoutInflater
@@ -29,10 +29,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.fragment.findNavController
 import com.example.graphvisualiser.*
 import com.example.graphvisualiser.R
-import com.example.graphvisualiser.model.ModelInferenceIntentService
-import com.example.graphvisualiser.model.ModelInferenceResultReceiver
 import com.google.common.util.concurrent.ListenableFuture
-import com.google.mlkit.vision.common.InputImage
 import java.io.BufferedInputStream
 import java.io.File
 import java.io.InputStream
@@ -47,9 +44,9 @@ class HomeFragment: Fragment(), Executor {
     private lateinit var imageCapture: ImageCapture
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+            inflater: LayoutInflater,
+            container: ViewGroup?,
+            savedInstanceState: Bundle?
     ): View? {
         val root = inflater.inflate(R.layout.fragment_home, container, false)
 
@@ -93,9 +90,9 @@ class HomeFragment: Fragment(), Executor {
         if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
             button.isEnabled = false
             Toast.makeText(
-                requireContext(),
-                "Please enable camera permissions and restart the app",
-                Toast.LENGTH_LONG
+                    requireContext(),
+                    "Please enable camera permissions and restart the app",
+                    Toast.LENGTH_LONG
             ).show()
         }
 
@@ -141,57 +138,58 @@ class HomeFragment: Fragment(), Executor {
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
             .build()
 
+        /*
         imageAnalysis.setAnalyzer(
-            ContextCompat.getMainExecutor(requireContext()),
-            ImageAnalysis.Analyzer { image ->
-                val rotationDegrees = image.imageInfo.rotationDegrees
-                recognizeText(InputImage.fromMediaImage(image.image, rotationDegrees), myViewModel)
-            })
+                ContextCompat.getMainExecutor(requireContext()),
+                ImageAnalysis.Analyzer { image ->
+                    val rotationDegrees = image.imageInfo.rotationDegrees
+
+                    image.close()
+                })*/
 
         imageCapture = ImageCapture.Builder()
             .setTargetRotation(requireView().display.rotation)
             .build()
 
         var camera = cameraProvider.bindToLifecycle(
-            this as LifecycleOwner,
-            cameraSelector,
-            imageCapture,
-            imageAnalysis,
-            preview
+                this as LifecycleOwner,
+                cameraSelector,
+                imageCapture,
+                preview
         )
     }
 
     private fun takePicture() {
         val outputFile = File(
-            requireContext().getExternalFilesDir(
-                Environment.DIRECTORY_PICTURES
-            ), "image"
+                requireContext().getExternalFilesDir(
+                        Environment.DIRECTORY_PICTURES
+                ), "image"
         )
         val outputFileOptions = ImageCapture.OutputFileOptions.Builder(outputFile).build()
         imageCapture.takePicture(outputFileOptions, this,
-            object : ImageCapture.OnImageSavedCallback {
-                override fun onError(error: ImageCaptureException) {
-                    // insert your code here.
-                    requireActivity().runOnUiThread {
-                        Toast.makeText(
-                            requireContext(),
-                            "Something went wrong taking a picture :(",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                object : ImageCapture.OnImageSavedCallback {
+                    override fun onError(error: ImageCaptureException) {
+                        // insert your code here.
+                        requireActivity().runOnUiThread {
+                            Toast.makeText(
+                                    requireContext(),
+                                    "Something went wrong taking a picture :(",
+                                    Toast.LENGTH_SHORT
+                            ).show()
+                        }
                     }
-                }
 
-                override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                    requireActivity().runOnUiThread {
-                        Log.i("model", outputFile.path)
-                        val bundle = bundleOf("bmpFile" to outputFile)
-                        findNavController().navigate(
-                            R.id.action_homeFragment_to_displayGraphFragment,
-                            bundle
-                        )
+                    override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                        requireActivity().runOnUiThread {
+                            Log.i("model", outputFile.path)
+                            val bundle = bundleOf("bmpFile" to outputFile)
+                            findNavController().navigate(
+                                    R.id.action_homeFragment_to_displayGraphFragment,
+                                    bundle
+                            )
+                        }
                     }
-                }
-            })
+                })
     }
 
     override fun execute(command: Runnable?) {

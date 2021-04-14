@@ -21,7 +21,6 @@ import org.tensorflow.lite.Interpreter
 import java.io.*
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-import java.util.concurrent.Executor
 
 
 val input_shape = arrayListOf<Int>(50, 50, 1)   // 50x50 single colour channel grayscale image
@@ -129,8 +128,6 @@ fun runModel(context:Context, modelFile: File, imageArray: Array<Array<FloatArra
         Log.e("running inference model error", "class tags not found")
         return null
     }
-
-    return null
 }
 
 /* google provided model for text recognition */
@@ -146,20 +143,21 @@ fun recognizeText(image: InputImage, viewModel: MyViewModel) {
                 // Task completed successfully
                 // [START_EXCLUDE]
                 // [START get_text]
-                val boundingBitmaps = ArrayList<Bitmap>()
+                val boundingRects = ArrayList<Rect>()
+                val maxBitmapSize = arrayListOf<Int>(-1, -1)
                 for (block in visionText.textBlocks) {
-                    Log.i("google model", "identified text block")
-                    for (line in block.lines) {
-                        for (element in line.elements) {
-                            val boundingBox: Rect = element.boundingBox!!
-                            val cornerPoints: Array<Point> = element.cornerPoints!!
-                            val text = element.text
-                            Log.i("google model", "identified text $text at ${cornerPoints.size} corner points. first corner: ${cornerPoints[0].toString()}")
-                            boundingBitmaps.add(Bitmap.createBitmap(image.bitmapInternal!!, boundingBox.left, boundingBox.top, boundingBox.width(), boundingBox.height()))
-                        }
+                    val boundingBox: Rect = block.boundingBox!!
+                    boundingRects.add(boundingBox)
+                    if (boundingBox.width() > maxBitmapSize[0]){
+                        maxBitmapSize[0] = boundingBox.width()
+                    }
+                    if (boundingBox.height() > maxBitmapSize[1]){
+                        maxBitmapSize[1] = boundingBox.height()
                     }
                 }
-                viewModel.boundingBoxes.value = boundingBitmaps
+
+                viewModel.maxBitmapSizes.value = maxBitmapSize
+                viewModel.boundingRects.value = boundingRects
                 Log.i("google model", "all text identified")
                 // [END get_text]
                 // [END_EXCLUDE]

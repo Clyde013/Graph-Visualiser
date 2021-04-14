@@ -12,5 +12,8 @@ class MyViewModel: ViewModel() {
 
     val graph = MutableLiveData<Graph>()
 
-    val boundingBoxes = MutableLiveData<ArrayList<Bitmap>>(null)
+    val boundingRects = MutableLiveData<ArrayList<Rect>>(null)
+
+    val maxBitmapSizes = MutableLiveData<ArrayList<Int>>(null)
+
 }
