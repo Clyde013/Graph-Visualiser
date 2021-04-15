@@ -69,7 +69,7 @@ def train_model():
 
 
 # default values
-img_path = 'data/justin_coords_cropped.jpg'
+img_path = 'data/testGraph.jpg'
 threshold = 0.9  # threshold for determining pixel as white or black
 model_path = 'saved_model/cnn_model_96.82'  # 96.82 does not include commas
 cols = 10
@@ -130,6 +130,13 @@ def load_image_into_input_rank_filter(images):
 def load_image_into_input_region_segmentation(image_filepath):
     # this function can take a single image and extract all individual characters
     img = rs.load_image_as_grayscale(image_filepath)
+    img = rs.background_subtract_grayscale(img)
+
+    fig, (ax1) = plt.subplots(1, 1, figsize=(5, 5))
+    ax1.imshow(img, cmap=plt.cm.gray)
+    ax1.axis('off')
+    plt.show()
+
     characters, comma_indices = rs.region_segmentation(img)
 
     display_images = np.empty((len(characters), 50, 50))
@@ -170,7 +177,7 @@ for i, ax in enumerate(axes.flatten()):
         ax.imshow(display_images[i], vmin=0, vmax=1, cmap=plt.cm.gray)
         title = str.format("{:d}: {:s}", i, predictions[i])
         ax.set_title(title)  # decode from bytes object
-        #ax.set_title(classes[np.argmax(predictions[i])])
+        # ax.set_title(classes[np.argmax(predictions[i])])
         ax.axis('off')
 
 plt.show()

@@ -49,7 +49,9 @@ class DisplayGraphFragment: Fragment() {
             }
 
             override fun onFailed(resultData: Bundle?) {
-                TODO("Not yet implemented")
+                Log.i("model", "inference failed")
+                val bmp = BitmapFactory.decodeFile(File(requireContext().filesDir, "combinedBitmap").path)
+                graphImageView.setImageBitmap(bmp)
             }
         }
 

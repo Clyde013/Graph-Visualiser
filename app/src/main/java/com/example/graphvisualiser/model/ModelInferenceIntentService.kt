@@ -40,9 +40,10 @@ class ModelInferenceIntentService(): IntentService("ModelInferenceIntentService"
 
         bmp = rotateImageIfRequired(bmp, bmpFile.toUri())
 
+        /*
         // combine bounded bitmaps into 1 big bitmap
         Log.i("model", "Original bitmap of width ${bmp.width} and height ${bmp.height}")
-        val comboBitmap = Bitmap.createBitmap(maxBitmapSizes[0] + 100, (maxBitmapSizes[1] + 50) * boundingRects.size, Bitmap.Config.RGB_565)
+        val comboBitmap = Bitmap.createBitmap(maxBitmapSizes[0] + 100, (maxBitmapSizes[1] + 50) * boundingRects.size, Bitmap.Config.ARGB_8888)
         Log.i("model", "Created bitmap of width ${comboBitmap.width} and height ${comboBitmap.height}")
 
         val comboImage = Canvas(comboBitmap)
@@ -61,12 +62,16 @@ class ModelInferenceIntentService(): IntentService("ModelInferenceIntentService"
         }
         Log.i("model", "combo bitmap final size, width: ${comboBitmap.width}, height: ${comboBitmap.height}")
 
-
         val bm: InputStream = resources.openRawResource(R.raw.justin_coords)
         val bufferedInputStream = BufferedInputStream(bm)
         val rawbmp = BitmapFactory.decodeStream(bufferedInputStream)
         val nh = (bmp.height * (512.0 / bmp.width)).toInt()
         val resbmp = Bitmap.createScaledBitmap(rawbmp, 512, nh, true)
+
+        bmp = Bitmap.createScaledBitmap(bmp, 512, nh, true)
+
+        Log.i("model colorspace", "picture bitmap: ${bmp.colorSpace?.getMaxValue(0)}, res bitmap: ${resbmp.colorSpace?.getMaxValue(0)}")
+        */
 
         try {
             Log.i("model filepath", "in service intent ${File(filesDir, "combinedBitmap").path}")
@@ -77,9 +82,7 @@ class ModelInferenceIntentService(): IntentService("ModelInferenceIntentService"
             e.printStackTrace()
         }
 
-
-        val output = processImageInput(this, bmp)   // send through python preprocessing pipeline
-        // TODO why is it returning [[1]]???? check what combo bitmap is being fed into pipeline since it works on res/raw images
+        val output = processImageInput(this,  bmp)   // send through python preprocessing pipeline
 
         // grouped into array of arrays, each inner array represent a coordinate, containing the imageArrays of characters sorted in order
         val coordinates = output?.first

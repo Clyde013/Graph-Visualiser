@@ -53,10 +53,6 @@ class HomeFragment: Fragment(), Executor {
         val button = root.findViewById<ImageButton>(R.id.photoButton)
         button.setOnClickListener {
             Log.i("model", "button pressed")
-            val bm: InputStream = resources.openRawResource(R.raw.justin_coords)
-            val bufferedInputStream = BufferedInputStream(bm)
-            var bmp = BitmapFactory.decodeStream(bufferedInputStream)
-            //bmp = rotateImage(bmp, 90f)
 
             takePicture()
 
@@ -107,14 +103,6 @@ class HomeFragment: Fragment(), Executor {
         }, ContextCompat.getMainExecutor(requireContext()))
 
         return root
-    }
-
-    private fun rotateImage(img: Bitmap, degree: Float): Bitmap? {
-        val matrix = Matrix()
-        matrix.postRotate(degree)
-        val rotatedImg = Bitmap.createBitmap(img, 0, 0, img.width, img.height, matrix, true)
-        img.recycle()
-        return rotatedImg
     }
 
     override fun onDestroyView() {
