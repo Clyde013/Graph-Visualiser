@@ -19,6 +19,24 @@ def load_image_as_grayscale(image_as_bytes):
     return grayscale
 
 
+def background_subtract_grayscale(grayscale):
+    rankFiltered = median(grayscale, disk(160))  # rank filtering at 160th maximum pixel
+
+    # background subtraction. using np.clip to keep unsigned pixel values within 0 and 255 otherwise negative values
+    # and unsigned integers have aneurysm
+    subtracted = np.subtract(rankFiltered.astype(np.int16), grayscale).clip(0, 255).astype(np.uint8)
+    # can be commented out depending on whether we want to invert the colours of the subtracted output
+    subtracted = util.invert(subtracted)
+    # result is black = 0 and white = 255 (because img_as_ubyte scales values)
+
+    subtracted[subtracted > 0.8 * 255] = 255  # set to white
+    subtracted[subtracted <= 0.8 * 255] = 0  # set to black
+
+    subtracted = median(subtracted, disk(3))  # remove salt and pepper noise
+
+    return subtracted
+
+
 def region_segmentation(image):
     # region based segmentation https://scikit-image.org/docs/dev/user_guide/tutorial_segmentation.html
     # assuming we take in the grayscale image as input
@@ -45,6 +63,13 @@ def region_segmentation(image):
     for obj_id in range(1, _ + 1):
         # creates a binary image with the current object
         obj_img = (labeled_characters == obj_id)
+
+        ys, xs = np.where(obj_img == 1)
+        width, height = xs.max() - xs.min() + 1, ys.max() - ys.min() + 1
+        # if it is more than 50% of width and height of the image, we assume it is the axes
+        if width > math.floor(0.5 * len(labeled_characters[0])) and height > math.floor(0.5 * len(labeled_characters)):
+            obj_img = remove_axes(obj_img, xs, ys)
+
         # computes object's area
         area = np.sum(obj_img)
         # dilatation factor inversely proportional to area
@@ -142,3 +167,7 @@ def crop_borders(image):
         result[result_center - image_half:result_center + (height - image_half), :] = image
 
     return result
+
+
+def remove_axes(axes, xs, ys):
+    return np.zeros_like(axes)

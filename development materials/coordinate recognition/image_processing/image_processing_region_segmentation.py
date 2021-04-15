@@ -194,7 +194,6 @@ def crop_borders(image):
 
 # assuming an axes is passed in, removes the axes without affecting numbers that overlap with the axes
 def remove_axes(axes, xs, ys):
-
     return np.zeros_like(axes)
     ''' subpar algorithm. does not work cleanly. given more time could possibly improve it. but i don't have that time
     print("removing the axes")

@@ -131,7 +131,8 @@ fun runModel(context:Context, modelFile: File, imageArray: Array<Array<FloatArra
 }
 
 /* google provided model for text recognition */
-fun recognizeText(image: InputImage, viewModel: MyViewModel) {
+@Deprecated("google sucks")
+fun recognizeText(image: InputImage, viewModel: MyViewModel) {      // unreliable bounding boxes :(
 
     // [START get_detector_default]
     val recognizer = TextRecognition.getClient()
@@ -156,8 +157,8 @@ fun recognizeText(image: InputImage, viewModel: MyViewModel) {
                     }
                 }
 
-                viewModel.maxBitmapSizes.value = maxBitmapSize
-                viewModel.boundingRects.value = boundingRects
+                //viewModel.maxBitmapSizes.value = maxBitmapSize
+                //viewModel.boundingRects.value = boundingRects
                 Log.i("google model", "all text identified")
                 // [END get_text]
                 // [END_EXCLUDE]

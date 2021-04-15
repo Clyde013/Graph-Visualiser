@@ -29,10 +29,12 @@ class ModelInferenceIntentService(): IntentService("ModelInferenceIntentService"
     override fun onHandleIntent(intent: Intent?) {
         resultReceiver = intent!!.getParcelableExtra("receiver")!!
 
+        /* this was for google text recogniser
         val rectType: Type = object: TypeToken<ArrayList<Rect>>(){}.type
         val boundingRects = Gson().fromJson<ArrayList<Rect>>(intent.getStringExtra("boundingRects"), rectType)
         val bitmapSizeType: Type = object: TypeToken<ArrayList<Int>>(){}.type
         val maxBitmapSizes = Gson().fromJson<ArrayList<Int>>(intent.getStringExtra("maxBitmapSizes"), bitmapSizeType)
+         */
 
         val modelFile = intent.getSerializableExtra("modelFile") as File
         val bmpFile = intent.getSerializableExtra("bmpFile") as File
@@ -40,7 +42,7 @@ class ModelInferenceIntentService(): IntentService("ModelInferenceIntentService"
 
         bmp = rotateImageIfRequired(bmp, bmpFile.toUri())
 
-        /*
+        /* google text recogniser
         // combine bounded bitmaps into 1 big bitmap
         Log.i("model", "Original bitmap of width ${bmp.width} and height ${bmp.height}")
         val comboBitmap = Bitmap.createBitmap(maxBitmapSizes[0] + 100, (maxBitmapSizes[1] + 50) * boundingRects.size, Bitmap.Config.ARGB_8888)

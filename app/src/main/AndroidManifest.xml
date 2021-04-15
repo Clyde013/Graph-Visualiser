@@ -24,9 +24,11 @@
 
         <activity android:name=".MainActivity"/>
 
-        <meta-data
+        <!-- used for google ocr text bounding boxes, but i'm not using them because its unreliable
+        <meta-data           for numbers and symbols
             android:name="com.google.mlkit.vision.DEPENDENCIES"
             android:value="ocr" />
+        -->
 
         <service
             android:enabled="true"

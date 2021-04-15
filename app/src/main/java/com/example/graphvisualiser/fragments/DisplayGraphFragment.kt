@@ -55,13 +55,15 @@ class DisplayGraphFragment: Fragment() {
             }
         }
 
-        recognizeText(InputImage.fromFilePath(requireContext(), bmpFile.toUri()), myViewModel)
+        // recognizeText(InputImage.fromFilePath(requireContext(), bmpFile.toUri()), myViewModel)
 
         val intent = Intent(requireContext(), ModelInferenceIntentService::class.java)
         intent.putExtra("receiver", resultReceiver)
         intent.putExtra("modelFile", myViewModel.modelFile.value)
         intent.putExtra("bmpFile", bmpFile)
+        requireActivity().startService(intent)
 
+        /*
         myViewModel.boundingRects.observe(viewLifecycleOwner, Observer {
             if (it != null){
                 Log.i("model", myViewModel.boundingRects.value!!::class.java.toString())
@@ -69,9 +71,9 @@ class DisplayGraphFragment: Fragment() {
                 intent.putExtra("boundingRects", Gson().toJson(myViewModel.boundingRects.value, rectType))
                 val bitmapSizeType: Type = object: TypeToken<ArrayList<Int>>(){}.type
                 intent.putExtra("maxBitmapSizes", Gson().toJson(myViewModel.maxBitmapSizes.value, bitmapSizeType))
-                requireActivity().startService(intent)
+
             }
-        })
+        })*/
 
         graphImageView = root.findViewById(R.id.graphImageView)
 

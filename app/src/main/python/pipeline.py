@@ -8,6 +8,7 @@ def load_image_into_input(image_bytes):  # passed in as bytearray
     # this function can take a single image and extract all individual characters
     image = bytes(image_bytes)
     img = rs.load_image_as_grayscale(image)
+    img = rs.background_subtract_grayscale(img)
 
     characters, comma_indices = rs.region_segmentation(img)
 
