@@ -56,8 +56,6 @@ class HomeFragment: Fragment(), Executor {
 
             takePicture()
 
-            //recognizeText(InputImage.fromBitmap(bmp, 90), myViewModel)
-
             /* wolfram alpha api call
             val retrieveGraph = @SuppressLint("StaticFieldLeak")
             object : RetrieveGraph(){
@@ -68,12 +66,8 @@ class HomeFragment: Fragment(), Executor {
             val testInputCoords = arrayOf(Pair(1f, 2f), Pair(2f, 4f), Pair(3f, 6f))
             retrieveGraph.execute(GraphInput(resources.getString(R.string.wolfram_alpha_appID), testInputCoords))
             */
-            // findNavController().navigate(R.id.action_homeFragment_to_displayGraphFragment)
-
 
             //imageView.setImageBitmap(plotImageInput(requireContext(), bmp))   // use for testing to see what input image is fed into the model
-
-
         }
 
         /*
@@ -121,12 +115,13 @@ class HomeFragment: Fragment(), Executor {
 
         preview.setSurfaceProvider(previewView.surfaceProvider)
 
+        /*
         val imageAnalysis = ImageAnalysis.Builder()
             .setTargetResolution(Size(1280, 720))
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
             .build()
 
-        /*
+
         imageAnalysis.setAnalyzer(
                 ContextCompat.getMainExecutor(requireContext()),
                 ImageAnalysis.Analyzer { image ->

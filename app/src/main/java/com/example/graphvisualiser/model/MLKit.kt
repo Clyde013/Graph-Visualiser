@@ -14,9 +14,6 @@ import com.google.android.gms.tasks.Task
 import com.google.firebase.ml.modeldownloader.CustomModelDownloadConditions
 import com.google.firebase.ml.modeldownloader.DownloadType
 import com.google.firebase.ml.modeldownloader.FirebaseModelDownloader
-import com.google.mlkit.vision.common.InputImage
-import com.google.mlkit.vision.text.Text
-import com.google.mlkit.vision.text.TextRecognition
 import org.tensorflow.lite.Interpreter
 import java.io.*
 import java.nio.ByteBuffer
@@ -130,7 +127,7 @@ fun runModel(context:Context, modelFile: File, imageArray: Array<Array<FloatArra
     }
 }
 
-/* google provided model for text recognition */
+/* google provided model for text recognition
 @Deprecated("google sucks")
 fun recognizeText(image: InputImage, viewModel: MyViewModel) {      // unreliable bounding boxes :(
 
@@ -169,4 +166,4 @@ fun recognizeText(image: InputImage, viewModel: MyViewModel) {      // unreliabl
                 Log.e("google sucks", "text recogniser failed")
             }
     // [END run_detector]
-}
+}*/

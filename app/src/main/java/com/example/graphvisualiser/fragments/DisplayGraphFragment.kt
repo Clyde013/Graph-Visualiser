@@ -24,11 +24,9 @@ import com.example.graphvisualiser.MyViewModel
 import com.example.graphvisualiser.R
 import com.example.graphvisualiser.model.ModelInferenceIntentService
 import com.example.graphvisualiser.model.ModelInferenceResultReceiver
-import com.example.graphvisualiser.recognizeText
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.google.mlkit.vision.common.InputImage
 import java.io.File
 import java.lang.reflect.Type
 
@@ -61,7 +59,6 @@ class DisplayGraphFragment: Fragment() {
             }
         }
 
-        // recognizeText(InputImage.fromFilePath(requireContext(), bmpFile.toUri()), myViewModel)
 
         val intent = Intent(requireContext(), ModelInferenceIntentService::class.java)
         intent.putExtra("receiver", resultReceiver)
