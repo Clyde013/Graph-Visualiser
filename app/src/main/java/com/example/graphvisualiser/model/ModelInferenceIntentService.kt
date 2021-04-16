@@ -75,15 +75,6 @@ class ModelInferenceIntentService(): IntentService("ModelInferenceIntentService"
         Log.i("model colorspace", "picture bitmap: ${bmp.colorSpace?.getMaxValue(0)}, res bitmap: ${resbmp.colorSpace?.getMaxValue(0)}")
         */
 
-        try {
-            Log.i("model filepath", "in service intent ${File(filesDir, "combinedBitmap").path}")
-            FileOutputStream(File(filesDir, "combinedBitmap")).use { out ->
-                bmp.compress(Bitmap.CompressFormat.PNG, 100, out) // bmp is your Bitmap instance
-            }
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-
         val output = processImageInput(this,  bmp)   // send through python preprocessing pipeline
 
         // grouped into array of arrays, each inner array represent a coordinate, containing the imageArrays of characters sorted in order
