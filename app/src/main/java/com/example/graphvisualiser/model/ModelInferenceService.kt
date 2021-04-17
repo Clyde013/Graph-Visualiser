@@ -1,6 +1,5 @@
 package com.example.graphvisualiser.model
 
-import android.app.IntentService
 import android.app.Service
 import android.content.Intent
 import android.graphics.*
@@ -8,15 +7,9 @@ import android.media.ExifInterface
 import android.net.Uri
 import android.os.*
 import android.util.Log
-import android.widget.Toast
 import androidx.core.net.toUri
-import com.example.graphvisualiser.R
-import com.example.graphvisualiser.processImageInput
-import com.example.graphvisualiser.runModel
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import java.io.*
-import java.lang.reflect.Type
 
 
 class ModelInferenceService(): Service() {

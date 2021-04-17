@@ -33,6 +33,7 @@ import java.io.BufferedInputStream
 import java.io.File
 import java.io.InputStream
 import java.util.concurrent.Executor
+import java.util.concurrent.TimeUnit
 
 
 class HomeFragment: Fragment(), Executor {
@@ -124,7 +125,7 @@ class HomeFragment: Fragment(), Executor {
         cameraProviderFuture.get().unbindAll()
     }
 
-    @SuppressLint("UnsafeExperimentalUsageError")
+    @SuppressLint("UnsafeExperimentalUsageError", "ClickableViewAccessibility")
     private fun bindPreview(cameraProvider: ProcessCameraProvider) {
         val preview : Preview = Preview.Builder()
             .build()
@@ -135,21 +136,6 @@ class HomeFragment: Fragment(), Executor {
 
         preview.setSurfaceProvider(previewView.surfaceProvider)
 
-        /*
-        val imageAnalysis = ImageAnalysis.Builder()
-            .setTargetResolution(Size(1280, 720))
-            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-            .build()
-
-
-        imageAnalysis.setAnalyzer(
-                ContextCompat.getMainExecutor(requireContext()),
-                ImageAnalysis.Analyzer { image ->
-                    val rotationDegrees = image.imageInfo.rotationDegrees
-
-                    image.close()
-                })*/
-
         imageCapture = ImageCapture.Builder().build()
 
         var camera = cameraProvider.bindToLifecycle(
@@ -158,6 +144,37 @@ class HomeFragment: Fragment(), Executor {
             imageCapture,
             preview
         )
+
+        previewView.afterMeasured {
+            previewView.setOnTouchListener { _, event ->
+                return@setOnTouchListener when (event.action) {
+                    MotionEvent.ACTION_DOWN -> {
+                        true
+                    }
+                    MotionEvent.ACTION_UP -> {
+                        val factory: MeteringPointFactory = SurfaceOrientedMeteringPointFactory(
+                                previewView.width.toFloat(), previewView.height.toFloat()
+                        )
+                        val autoFocusPoint = factory.createPoint(event.x, event.y)
+                        try {
+                            camera.cameraControl.startFocusAndMetering(
+                                    FocusMeteringAction.Builder(
+                                            autoFocusPoint,
+                                            FocusMeteringAction.FLAG_AF
+                                    ).apply {
+                                        //focus only when the user tap the preview
+                                        disableAutoCancel()
+                                    }.build()
+                            )
+                        } catch (e: CameraInfoUnavailableException) {
+                            Log.d("ERROR", "cannot access camera", e)
+                        }
+                        true
+                    }
+                    else -> false // Unhandled event.
+                }
+            }
+        }
     }
 
     private fun takePicture() {
@@ -207,5 +224,16 @@ class HomeFragment: Fragment(), Executor {
     override fun onStop(){
         super.onStop()
         orientationEventListener.disable()
+    }
+
+    private inline fun View.afterMeasured(crossinline block: () -> Unit) {
+        viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+            override fun onGlobalLayout() {
+                if (measuredWidth > 0 && measuredHeight > 0) {
+                    viewTreeObserver.removeOnGlobalLayoutListener(this)
+                    block()
+                }
+            }
+        })
     }
 }

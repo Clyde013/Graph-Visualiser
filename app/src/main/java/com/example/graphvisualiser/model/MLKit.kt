@@ -1,16 +1,14 @@
-package com.example.graphvisualiser
+package com.example.graphvisualiser.model
 
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Point
-import android.graphics.Rect
 import android.util.Log
-import android.widget.Toast
 import com.chaquo.python.PyException
 import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
-import com.google.android.gms.tasks.Task
+import com.example.graphvisualiser.MyViewModel
+import com.example.graphvisualiser.R
 import com.google.firebase.ml.modeldownloader.CustomModelDownloadConditions
 import com.google.firebase.ml.modeldownloader.DownloadType
 import com.google.firebase.ml.modeldownloader.FirebaseModelDownloader

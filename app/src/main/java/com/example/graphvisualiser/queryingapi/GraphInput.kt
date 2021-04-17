@@ -1,6 +1,6 @@
 package com.example.graphvisualiser.queryingapi
 
-data class GraphInput(val appID: String, val coordinates: Array<Pair<Float, Float>>) {
+data class GraphInput(val appID: String, val coordinates: Array<String>) {
     /* kotlin doesnt like if i dont do this */
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

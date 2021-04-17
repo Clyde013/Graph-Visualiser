@@ -1,5 +1,6 @@
 package com.example.graphvisualiser.fragments
 
+import android.annotation.SuppressLint
 import android.app.ActionBar
 import android.content.Intent
 import android.graphics.Bitmap
@@ -13,8 +14,10 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.ScrollView
+import android.widget.Toast
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -26,6 +29,9 @@ import com.example.graphvisualiser.MyViewModel
 import com.example.graphvisualiser.R
 import com.example.graphvisualiser.model.ModelInferenceResultReceiver
 import com.example.graphvisualiser.model.ModelInferenceService
+import com.example.graphvisualiser.queryingapi.Graph
+import com.example.graphvisualiser.queryingapi.GraphInput
+import com.example.graphvisualiser.queryingapi.RetrieveGraph
 import com.example.graphvisualiser.recyclerview.CoordinateAdapter
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.gson.Gson
@@ -52,8 +58,10 @@ class DisplayGraphFragment: Fragment() {
 
         val coordinateRecyclerView = root.findViewById<RecyclerView>(R.id.coordinateRecyclerView)
         val coordinateLoadingGif = root.findViewById<GifImageView>(R.id.coordinateLoadingGifImageView)
+        val graphButton = root.findViewById<Button>(R.id.graphButton)
         coordinateLoadingGif.visibility = View.VISIBLE
         coordinateRecyclerView.visibility = View.GONE
+        graphButton.visibility = View.GONE
 
         val bmpFile = this.arguments?.getSerializable("bmpFile") as File
         val resultReceiver = object : ModelInferenceResultReceiver(Handler()){
@@ -78,6 +86,7 @@ class DisplayGraphFragment: Fragment() {
 
                 coordinateLoadingGif.visibility = View.GONE
                 coordinateRecyclerView.visibility = View.VISIBLE
+                graphButton.visibility = View.VISIBLE
             }
 
             override fun onFailed(resultData: Bundle?) {
@@ -126,6 +135,21 @@ class DisplayGraphFragment: Fragment() {
                 graphImageView.setImageBitmap(it.image)
             }
         })
+
+        graphButton.setOnClickListener {
+            val retrieveGraph = @SuppressLint("StaticFieldLeak")
+            object : RetrieveGraph(){
+                override fun onResponseReceived(result: Any?) {
+                    myViewModel.graph.value = result as Graph
+                }
+            }
+            try {
+                Log.i("model api call", "${myViewModel.coordinatesAsInput().toString()}")
+                retrieveGraph.execute(GraphInput(resources.getString(R.string.wolfram_alpha_appID), myViewModel.coordinatesAsInput()))
+            } catch (e: Exception){     // threw exception because coord not enclosed in ()
+                Toast.makeText(requireContext(), "Please ensure all coordinates are correct!", Toast.LENGTH_SHORT).show()
+            }
+        }
 
         return root
     }

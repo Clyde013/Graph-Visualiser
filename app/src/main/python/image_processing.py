@@ -71,7 +71,7 @@ def region_segmentation(image):
         ys, xs = np.where(obj_img == 1)
         width, height = xs.max() - xs.min() + 1, ys.max() - ys.min() + 1
         # if it is more than 50% of width and height of the image, we assume it is the axes
-        if width > math.floor(0.5 * len(image[0])) and height > math.floor(0.5 * len(image)):
+        if width > math.floor(0.4 * len(image[0])) or height > math.floor(0.4 * len(image)):
             obj_img = remove_axes(obj_img, xs, ys)
 
         # computes object's area

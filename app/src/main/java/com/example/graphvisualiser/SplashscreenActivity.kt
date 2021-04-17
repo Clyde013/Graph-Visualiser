@@ -1,7 +1,6 @@
 package com.example.graphvisualiser
 
 import android.Manifest
-import android.animation.Animator
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.content.Intent
@@ -9,8 +8,6 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.os.PersistableBundle
-import android.util.Log
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
 import android.view.animation.AnticipateOvershootInterpolator
@@ -19,8 +16,8 @@ import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.observe
+import com.example.graphvisualiser.model.downloadModel
 import kotlin.system.exitProcess
 
 class SplashscreenActivity : AppCompatActivity() {

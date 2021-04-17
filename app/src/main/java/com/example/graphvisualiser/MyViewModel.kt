@@ -27,6 +27,21 @@ class MyViewModel: ViewModel() {
         }
     }
 
+    @Throws(Exception::class)
+    fun coordinatesAsInput(): Array<String>{
+        val result = arrayListOf<String>()
+        for (coordinate in coordinates){
+            if (coordinate.value != null){
+                if (coordinate.value!![0] == '(' && coordinate.value!![coordinate.value!!.length - 1] == ')') {
+                    result.add(coordinate.value!!)
+                } else {
+                    throw Exception("coordinate are not enclosed in brackets")
+                }
+            }
+        }
+        return result.toTypedArray()
+    }
+
     /*
     val boundingRects = MutableLiveData<ArrayList<Rect>>(null)
 

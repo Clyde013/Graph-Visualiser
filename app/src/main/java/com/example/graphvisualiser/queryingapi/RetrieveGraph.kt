@@ -22,7 +22,7 @@ abstract class RetrieveGraph: AsyncTask<GraphInput, Void, Graph>(), ClientInterf
 
         var stringUrl = "http://api.wolframalpha.com/v2/query?appid=${graphInput.appID}&input=fit"
         for (coordinate in graphInput.coordinates) {
-            stringUrl = "$stringUrl+(${coordinate.first},${coordinate.second})"
+            stringUrl = "$stringUrl+$coordinate"
         }
 
         val url = URL(stringUrl)
