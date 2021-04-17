@@ -38,9 +38,11 @@ class ModelInferenceIntentService(): IntentService("ModelInferenceIntentService"
 
         val modelFile = intent.getSerializableExtra("modelFile") as File
         val bmpFile = intent.getSerializableExtra("bmpFile") as File
-        var bmp = BitmapFactory.decodeFile(bmpFile.path)    // retrieve bitmap from disk
+        val bmp = rotateImageIfRequired(BitmapFactory.decodeFile(bmpFile.path), bmpFile.toUri()) // retrieve bitmap from disk
+        val nh = (bmp.height * (2000f / bmp.width)).toInt()  // resize the bitmap
+        Log.i("model bitmap resize", "${bmp.height}, ${bmp.width}, ${nh.toString()}")
+        val resbmp = Bitmap.createScaledBitmap(bmp, 2000, nh, true)
 
-        bmp = rotateImageIfRequired(bmp, bmpFile.toUri())
 
         /* google text recogniser
         // combine bounded bitmaps into 1 big bitmap
@@ -75,13 +77,23 @@ class ModelInferenceIntentService(): IntentService("ModelInferenceIntentService"
         Log.i("model colorspace", "picture bitmap: ${bmp.colorSpace?.getMaxValue(0)}, res bitmap: ${resbmp.colorSpace?.getMaxValue(0)}")
         */
 
-        val output = processImageInput(this,  bmp)   // send through python preprocessing pipeline
+        /*
+        val bm: InputStream = resources.openRawResource(R.raw.justin_coords)
+        val bufferedInputStream = BufferedInputStream(bm)
+        val rawbmp = BitmapFactory.decodeStream(bufferedInputStream)
+        val nh = (rawbmp.height * (2000 / rawbmp.width)).toInt()
+        val resbmp = Bitmap.createScaledBitmap(rawbmp, 2000, nh, true)*/
+
+        val output = processImageInput(this,  resbmp)   // send through python preprocessing pipeline
 
         // grouped into array of arrays, each inner array represent a coordinate, containing the imageArrays of characters sorted in order
         val coordinates = output?.first
         val commaIndices = output?.second   // indices of the commas, as manually identified by algorithm
+
+        Log.i("model processed image", "${coordinates!!.size.toString()}, ${commaIndices!!.size.toString()}")
+
         val predictedCoordinates = arrayListOf<ArrayList<String>>()
-        if (coordinates != null && commaIndices != null) {
+        if (coordinates.isNotEmpty()) {
             var index = 0
             for (coordinate in coordinates) {
                 val predictedCoordinate = arrayListOf<String>()
@@ -112,7 +124,7 @@ class ModelInferenceIntentService(): IntentService("ModelInferenceIntentService"
     }
 
 
-    private fun rotateImageIfRequired(img: Bitmap, selectedImage: Uri): Bitmap? {
+    private fun rotateImageIfRequired(img: Bitmap, selectedImage: Uri): Bitmap {
         val ei = ExifInterface(selectedImage.path!!)
         return when (ei.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)) {
             ExifInterface.ORIENTATION_ROTATE_90 -> rotateImage(img, 90)
@@ -122,7 +134,7 @@ class ModelInferenceIntentService(): IntentService("ModelInferenceIntentService"
         }
     }
 
-    private fun rotateImage(img: Bitmap, degree: Int): Bitmap? {
+    private fun rotateImage(img: Bitmap, degree: Int): Bitmap {
         val matrix = Matrix()
         matrix.postRotate(degree.toFloat())
         val rotatedImg = Bitmap.createBitmap(img, 0, 0, img.width, img.height, matrix, true)

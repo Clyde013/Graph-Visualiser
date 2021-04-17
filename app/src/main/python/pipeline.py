@@ -10,13 +10,13 @@ def load_image_into_input(image_bytes):  # passed in as bytearray
     img = rs.load_image_as_grayscale(image)
     img = rs.background_subtract_grayscale(img)
 
-    characters, comma_indices = rs.region_segmentation(img)
+    coordinates, comma_indices = rs.region_segmentation(img)
 
-    input_images = [[np.empty((50, 50, 1)) for j in range(len(characters[i]))] for i in range(len(characters))]
+    input_images = [[np.empty((50, 50, 1)) for j in range(len(coordinates[i]))] for i in range(len(coordinates))]
 
-    for i in range(len(characters)):
-        for j in range(len(characters[i])):
-            cropped_image = rs.crop_borders(characters[i][j])
+    for i in range(len(coordinates)):
+        for j in range(len(coordinates[i])):
+            cropped_image = rs.crop_borders(coordinates[i][j])
             resized_image = rs.resize_image(cropped_image, 50)
             # remove strange in between values that pop up during resizing
             binarised_resized_image = rs.binarise_grayscale(resized_image)

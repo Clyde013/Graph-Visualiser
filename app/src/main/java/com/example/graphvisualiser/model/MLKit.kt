@@ -53,12 +53,13 @@ fun processImageInput(context: Context, image: Bitmap): Pair<Array<Array<Array<A
     image.recycle()
 
     return try{
+        Log.i("model inside processing", "calling module")
         val output = mainModule.callAttr("load_image_into_input", byteArray).asList()
         val imageArray = output[0].toJava(Array<Array<Array<Array<FloatArray>>>>::class.java)   // for some reason it returns the np array as dtype float although i specified np.byte. No harm done it reduces conversions in the long run
         val commaIndices = output[1].toJava(Array<Int>::class.java)
         Pair(imageArray, commaIndices)
     }catch(e: PyException){
-        Toast.makeText(context, "something went wrong processing image input :(", Toast.LENGTH_SHORT).show()
+        e.printStackTrace()
         null
     }
 }

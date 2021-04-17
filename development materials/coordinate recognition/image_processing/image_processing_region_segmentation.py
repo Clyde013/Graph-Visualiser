@@ -99,13 +99,14 @@ def region_segmentation(image):
     feature_grouping_map = np.zeros_like(segmentation)  # use this to group coordinates as features
 
     characters_info = list()
-    comma_indices = list()
+    #comma_indices = list()
     running_height = list()
     for label in range(1, nr_objects + 1):
         ys, xs = np.where(labeled == label)
         topleft = (xs.min(), ys.min())
         width, height = xs.max() - xs.min() + 1, ys.max() - ys.min() + 1
 
+        '''
         running_height.append(height)
         median_height = np.median(running_height)
 
@@ -113,6 +114,15 @@ def region_segmentation(image):
         if diff >= median_height * 1 / 2:
             comma_indices.append(label - 1)
             running_height.pop()
+        '''
+        comma = False
+        running_height.append(height)
+        median_height = np.median(running_height)
+
+        diff = abs(height - median_height)
+        if diff >= median_height * 1 / 2:
+            running_height.pop()
+            comma = True
 
         # instead of np.reshape which will throw error since our values will not be perfectly square shape
         # (e.g. open bracket '(' ) and the number of values that were labelled may be less than shape[0]*shape[1]
@@ -130,15 +140,12 @@ def region_segmentation(image):
         # fill shape = width:   0 1 2 3
         # fill[:width] = fill[:4] = 0 1 2 3
         # 1 2 3 4 [1: 1+width] = [1:5]
-        '''
-        fig, (ax1) = plt.subplots(1, 1, figsize=(5, 5))
-        ax1.imshow(fill, cmap=plt.cm.gray)
-        ax1.axis('off')
-        plt.show()
-        '''
 
-        characters_info.append((topleft[0], topleft[1], fill))
 
+        characters_info.append((topleft[0], topleft[1], fill, comma))
+        #characters_info.append((topleft[0], topleft[1], fill))
+
+    '''
     labeled_coord_groups, number_of_coords = ndi.label(feature_grouping_map)
     characters = [[] for i in range(number_of_coords)]
 
@@ -152,6 +159,28 @@ def region_segmentation(image):
             coordinate.sort(key=functools.cmp_to_key(comparator))
             for character in coordinate:
                 result.append(character[1])
+    '''
+
+    labeled_coord_groups, number_of_coords = ndi.label(feature_grouping_map)
+    characters = [[] for i in range(number_of_coords)]
+
+    for character_info in characters_info:
+        x, y, character, comma = character_info
+        characters[labeled_coord_groups[y][x] - 1].append((x, character, comma))
+
+    result = []
+    comma_indices = list()
+    index = 0
+    for coordinate in characters:
+        if coordinate:  # if coordinate not empty
+            coordinate.sort(key=functools.cmp_to_key(comparator))
+            coordinate_characters = []
+            for character in coordinate:
+                coordinate_characters.append(character[1])
+                if character[2]:
+                    comma_indices.append(index)
+                index += 1
+            result.append(coordinate_characters)
 
     return result, comma_indices
 
@@ -177,6 +206,8 @@ def binarise_grayscale(image):  # works only on ranges 0...1
 def crop_borders(image):
     height = len(image)
     width = len(image[0])
+
+    print(image)
 
     if height > width:
         result = np.zeros((height, height))

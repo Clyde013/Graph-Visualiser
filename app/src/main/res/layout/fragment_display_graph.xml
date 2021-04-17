@@ -18,10 +18,22 @@
         android:layout_height="wrap_content"
         app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
-        <pl.droidsonroids.gif.GifImageView
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:src="@drawable/loading" />
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <pl.droidsonroids.gif.GifImageView
+                android:id="@+id/coordinateLoadingGifImageView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:src="@drawable/loading" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/coordinateRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="500dp"/>
+        </LinearLayout>
 
     </ScrollView>
 

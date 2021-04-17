@@ -20,14 +20,21 @@ import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.DefaultItemAnimator
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.graphvisualiser.MyViewModel
 import com.example.graphvisualiser.R
 import com.example.graphvisualiser.model.ModelInferenceIntentService
 import com.example.graphvisualiser.model.ModelInferenceResultReceiver
+import com.example.graphvisualiser.recyclerview.CoordinateAdapter
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import pl.droidsonroids.gif.GifImageView
+import java.io.BufferedInputStream
 import java.io.File
+import java.io.InputStream
 import java.lang.reflect.Type
 
 class DisplayGraphFragment: Fragment() {
@@ -47,11 +54,27 @@ class DisplayGraphFragment: Fragment() {
         bottomSheetBehavior.peekHeight = 100
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
 
+        val coordinateRecyclerView = root.findViewById<RecyclerView>(R.id.coordinateRecyclerView)
+        val coordinateLoadingGif = root.findViewById<GifImageView>(R.id.coordinateLoadingGifImageView)
+        coordinateLoadingGif.visibility = View.VISIBLE
+        coordinateRecyclerView.visibility = View.GONE
+
         val bmpFile = this.arguments?.getSerializable("bmpFile") as File
         val resultReceiver = object : ModelInferenceResultReceiver(Handler()){
             override fun onSuccess(resultData: Bundle?) {
                 val predictedCoordinates = Gson().fromJson(resultData?.getString("data"), ArrayList<ArrayList<String>>()::class.java)
                 Log.i("model intent service", predictedCoordinates.toString())
+
+                myViewModel.setCoordinates(predictedCoordinates)
+
+                coordinateRecyclerView.setHasFixedSize(true)
+                val layoutManager = LinearLayoutManager(requireContext())
+                coordinateRecyclerView.layoutManager = layoutManager
+                coordinateRecyclerView.itemAnimator = DefaultItemAnimator()
+                coordinateRecyclerView.adapter = CoordinateAdapter(myViewModel.coordinates)
+
+                coordinateLoadingGif.visibility = View.GONE
+                coordinateRecyclerView.visibility = View.VISIBLE
             }
 
             override fun onFailed(resultData: Bundle?) {
@@ -81,6 +104,14 @@ class DisplayGraphFragment: Fragment() {
         graphImageView = root.findViewById(R.id.graphImageView)
         // set the original camera image
         val bmp = rotateImageIfRequired(BitmapFactory.decodeFile(bmpFile.path), bmpFile.toUri())
+
+        /*
+        val bm: InputStream = resources.openRawResource(R.raw.justin_coords)
+        val bufferedInputStream = BufferedInputStream(bm)
+        val rawbmp = BitmapFactory.decodeStream(bufferedInputStream)
+        val nh = (rawbmp.height * (512.0 / rawbmp.width)).toInt()
+        val resbmp = Bitmap.createScaledBitmap(rawbmp, 512, nh, true)*/
+
         graphImageView.setImageBitmap(bmp)
 
         if (myViewModel.graph.value != null) {

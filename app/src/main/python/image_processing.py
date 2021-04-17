@@ -1,8 +1,12 @@
 from skimage.io import imread
 import numpy as np
 
+from skimage.filters.rank import median
+from skimage.morphology import disk
+
 from skimage import img_as_ubyte
 from skimage import transform
+from skimage import util
 from skimage.color import rgb2gray
 from skimage.filters import sobel
 from skimage.segmentation import watershed
@@ -67,7 +71,7 @@ def region_segmentation(image):
         ys, xs = np.where(obj_img == 1)
         width, height = xs.max() - xs.min() + 1, ys.max() - ys.min() + 1
         # if it is more than 50% of width and height of the image, we assume it is the axes
-        if width > math.floor(0.5 * len(labeled_characters[0])) and height > math.floor(0.5 * len(labeled_characters)):
+        if width > math.floor(0.5 * len(image[0])) and height > math.floor(0.5 * len(image)):
             obj_img = remove_axes(obj_img, xs, ys)
 
         # computes object's area

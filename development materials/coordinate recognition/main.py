@@ -20,29 +20,28 @@ if gpus:
         # Memory growth must be set before GPUs have been initialized
         print(e)
 
-# feature data already flattened from original box size of 50
-test_data = loadPickle('./data/test/test.pickle')
-train_data = loadPickle('./data/train/train.pickle')
-# loaded images are in cmap='gray' default where black is 0 and white is 1
-
 classes = loadClasses('classes.txt')  # labels for one_hot
 
-train_images = np.empty((len(train_data), 50, 50, 1))
-train_labels = np.empty(len(train_data))
-
-for i in range(len(train_data)):
-    train_labels[i] = one_hot.decode_index(train_data[i]['label'])
-    train_images[i] = np.array(train_data[i]['features']).reshape((50, 50, 1))
-
-test_images = np.empty((len(test_data), 50, 50, 1))
-test_labels = np.empty(len(test_data))
-
-for i in range(len(test_data)):
-    test_labels[i] = one_hot.decode_index(test_data[i]['label'])
-    test_images[i] = np.array(test_data[i]['features']).reshape((50, 50, 1))
-
-
 def train_model():
+    # feature data already flattened from original box size of 50
+    test_data = loadPickle('./data/test/test.pickle')
+    train_data = loadPickle('./data/train/train.pickle')
+    # loaded images are in cmap='gray' default where black is 0 and white is 1
+
+    train_images = np.empty((len(train_data), 50, 50, 1))
+    train_labels = np.empty(len(train_data))
+
+    for i in range(len(train_data)):
+        train_labels[i] = one_hot.decode_index(train_data[i]['label'])
+        train_images[i] = np.array(train_data[i]['features']).reshape((50, 50, 1))
+
+    test_images = np.empty((len(test_data), 50, 50, 1))
+    test_labels = np.empty(len(test_data))
+
+    for i in range(len(test_data)):
+        test_labels[i] = one_hot.decode_index(test_data[i]['label'])
+        test_images[i] = np.array(test_data[i]['features']).reshape((50, 50, 1))
+
     model = tf.keras.Sequential([tf.keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=(50, 50, 1)),
                                  tf.keras.layers.MaxPooling2D((2, 2)),
                                  tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
@@ -78,13 +77,13 @@ parser = argparse.ArgumentParser(description='Train or test models.')
 parser.add_argument('--train', type=bool, help='Set true to retrain a new model', default=False)
 parser.add_argument('--threshold', type=float, help='Threshold used to determine whether a pixel is white or black',
                     default=threshold)
-parser.add_argument('--img_path', type=str, help='Filepath to image to run model on. Default is "data/justin_coords_cropped.jpg"',
+parser.add_argument('--img_path', type=str,
+                    help='Filepath to image to run model on. Default is "data/justin_coords_cropped.jpg"',
                     default=img_path)
 parser.add_argument('--model_path', type=str, help='Filepath to model to run. Default is "saved_model/cnn_model_96.82"',
                     default=model_path)
 parser.add_argument('--cols', type=int, help='Number of columns used to display inference results.',
                     default=cols)
-
 
 args = parser.parse_args()
 
@@ -137,22 +136,28 @@ def load_image_into_input_region_segmentation(image_filepath):
     ax1.axis('off')
     plt.show()
 
-    characters, comma_indices = rs.region_segmentation(img)
+    coordinates, comma_indices = rs.region_segmentation(img)
 
-    display_images = np.empty((len(characters), 50, 50))
-    input_images = np.empty((len(characters), 50, 50, 1))
+    display_images = [[np.empty((50, 50)) for j in range(len(coordinates[i]))] for i in range(len(coordinates))]
+    input_images = list()
 
-    for i in range(len(characters)):
-        cropped_image = rs.crop_borders(characters[i])
-        resized_image = rs.resize_image(cropped_image, 50)
-        # remove strange in between values that pop up during resizing
-        binarised_resized_image = rs.binarise_grayscale(resized_image)
+    print("coordinates:")
+    print(coordinates)
 
-        display_images[i] = binarised_resized_image
-        input_images[i] = np.array(binarised_resized_image).astype(np.float32).reshape((50, 50, 1))
+    for coordinate in range(len(coordinates)):
+        print("coordinate:")
+        print(coordinate)
+        for i in range(len(coordinates[coordinate])):
+            cropped_image = rs.crop_borders(coordinates[coordinate][i])
+            resized_image = rs.resize_image(cropped_image, 50)
+            # remove strange in between values that pop up during resizing
+            binarised_resized_image = rs.binarise_grayscale(resized_image)
+
+            display_images[coordinate][i] = binarised_resized_image
+            input_images.append(np.array(binarised_resized_image).astype(np.float32).reshape((50, 50, 1)))
 
     # return comma_indices too!
-    return display_images, input_images
+    return display_images, input_images, comma_indices
 
 
 '''
@@ -160,21 +165,37 @@ display_images, input_images = load_image_into_input_rank_filter([img_path, 'dat
                                                       'data/justin_beta.jpg'])
 predictions = saved_model.predict(input_images)
 '''
-display_images, input_images = load_image_into_input_region_segmentation(img_path)
+display_images, input_images, comma_indices = load_image_into_input_region_segmentation(img_path)
 
-model_predictions = saved_model.predict(input_images)
+print("comma indices", comma_indices)
+
+model_predictions = saved_model.predict(np.array(input_images))
 predictions = list()
 for i in range(len(model_predictions)):
     predictions.append(classes[np.argmax(model_predictions[i])])
 
-rows = math.ceil(len(display_images) / cols)
+print("predictions:", predictions)
+
+flattened_display_images = list()
+for coordinates in display_images:
+    print(coordinates)
+    for character in coordinates:
+        flattened_display_images.append(character)
+
+print("making it array")
+flattened_display_images = np.array(flattened_display_images)
+print("made it array")
+
+rows = math.ceil(flattened_display_images.shape[0] / cols)
+print("calculated rows", rows)
 fig, axes = plt.subplots(rows, cols)
 
 fig.subplots_adjust(hspace=0.2)
+print("declared fig")
 
 for i, ax in enumerate(axes.flatten()):
-    if i < len(display_images):
-        ax.imshow(display_images[i], vmin=0, vmax=1, cmap=plt.cm.gray)
+    if i < flattened_display_images.shape[0]:
+        ax.imshow(flattened_display_images[i], vmin=0, vmax=1, cmap=plt.cm.gray)
         title = str.format("{:d}: {:s}", i, predictions[i])
         ax.set_title(title)  # decode from bytes object
         # ax.set_title(classes[np.argmax(predictions[i])])
