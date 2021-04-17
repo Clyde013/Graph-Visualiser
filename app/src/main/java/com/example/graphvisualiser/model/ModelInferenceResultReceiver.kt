@@ -7,11 +7,11 @@ import android.os.ResultReceiver
 abstract class ModelInferenceResultReceiver(handler: Handler): ResultReceiver(handler) {
     override fun onReceiveResult(resultCode: Int, resultData: Bundle?) {
         when (resultCode){
-            ModelInferenceIntentService.Constants.SUCCESS -> {
+            ModelInferenceService.Constants.SUCCESS -> {
                 onSuccess(resultData)
             }
 
-            ModelInferenceIntentService.Constants.FAILED -> {
+            ModelInferenceService.Constants.FAILED -> {
                 onFailed(resultData)
             }
         }

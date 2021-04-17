@@ -22,7 +22,8 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".MainActivity"/>
+        <activity android:name=".MainActivity"
+            android:screenOrientation="portrait"/>
 
         <!-- used for google ocr text bounding boxes, but i'm not using them because its unreliable
         <meta-data           for numbers and symbols
@@ -32,7 +33,7 @@
 
         <service
             android:enabled="true"
-            android:name=".model.ModelInferenceIntentService" />
+            android:name=".model.ModelInferenceService" />
     </application>
 
 </manifest>

@@ -1,10 +1,10 @@
 package com.example.graphvisualiser.fragments
 
+import android.app.ActionBar
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
-import android.graphics.Rect
 import android.media.ExifInterface
 import android.net.Uri
 import android.os.Bundle
@@ -13,7 +13,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.ImageView
 import android.widget.ScrollView
 import androidx.core.net.toUri
@@ -25,22 +24,19 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.graphvisualiser.MyViewModel
 import com.example.graphvisualiser.R
-import com.example.graphvisualiser.model.ModelInferenceIntentService
 import com.example.graphvisualiser.model.ModelInferenceResultReceiver
+import com.example.graphvisualiser.model.ModelInferenceService
 import com.example.graphvisualiser.recyclerview.CoordinateAdapter
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import pl.droidsonroids.gif.GifImageView
-import java.io.BufferedInputStream
 import java.io.File
-import java.io.InputStream
-import java.lang.reflect.Type
 
 class DisplayGraphFragment: Fragment() {
     private val myViewModel: MyViewModel by activityViewModels()
     lateinit var graphImageView: ImageView
     lateinit var bottomSheet: ScrollView
+    lateinit var intent: Intent
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -73,6 +69,13 @@ class DisplayGraphFragment: Fragment() {
                 coordinateRecyclerView.itemAnimator = DefaultItemAnimator()
                 coordinateRecyclerView.adapter = CoordinateAdapter(myViewModel.coordinates)
 
+                val factor: Float = requireContext().resources.displayMetrics.density
+                if (coordinateRecyclerView.layoutParams.height > 300 * factor){     // height > 300dp
+                    coordinateRecyclerView.layoutParams.height = (300 * factor).toInt()   // let user use scrollview
+                } else {
+                    coordinateRecyclerView.layoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT
+                }
+
                 coordinateLoadingGif.visibility = View.GONE
                 coordinateRecyclerView.visibility = View.VISIBLE
             }
@@ -83,7 +86,7 @@ class DisplayGraphFragment: Fragment() {
         }
 
 
-        val intent = Intent(requireContext(), ModelInferenceIntentService::class.java)
+        intent = Intent(requireContext(), ModelInferenceService::class.java)
         intent.putExtra("receiver", resultReceiver)
         intent.putExtra("modelFile", myViewModel.modelFile.value)
         intent.putExtra("bmpFile", bmpFile)
@@ -125,6 +128,11 @@ class DisplayGraphFragment: Fragment() {
         })
 
         return root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        requireActivity().stopService(intent)
     }
 
     private fun rotateImageIfRequired(img: Bitmap, selectedImage: Uri): Bitmap? {

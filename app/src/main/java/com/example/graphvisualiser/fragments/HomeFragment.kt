@@ -10,11 +10,10 @@ import android.media.ExifInterface
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
+import android.os.Handler
 import android.util.Log
 import android.util.Size
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.ImageButton
 import android.widget.Toast
 import androidx.camera.core.*
@@ -43,60 +42,81 @@ class HomeFragment: Fragment(), Executor {
     private lateinit var previewView: PreviewView
     private lateinit var imageCapture: ImageCapture
 
+    // compensating for landscape pictures orientation to display correctly
+    // this only works if the phone is held upright so include that in the onboarding
+    private val orientationEventListener by lazy {
+        object : OrientationEventListener(context) {
+            override fun onOrientationChanged(orientation: Int) {
+                // Monitors orientation values to determine the target rotation value
+                val rotation = when (orientation) {
+                    in 45..134 -> Surface.ROTATION_270
+
+                    in 135..224 -> Surface.ROTATION_180
+
+                    in 225..314 -> Surface.ROTATION_90
+
+                    else -> Surface.ROTATION_0
+                }
+
+                imageCapture.targetRotation = rotation
+            }
+        }
+    }
+
     override fun onCreateView(
             inflater: LayoutInflater,
             container: ViewGroup?,
             savedInstanceState: Bundle?
-    ): View? {
-        val root = inflater.inflate(R.layout.fragment_home, container, false)
+        ): View? {
+            val root = inflater.inflate(R.layout.fragment_home, container, false)
 
-        val button = root.findViewById<ImageButton>(R.id.photoButton)
-        button.setOnClickListener {
-            Log.i("model", "button pressed")
+            val button = root.findViewById<ImageButton>(R.id.photoButton)
+            button.setOnClickListener {
+                Log.i("model", "button pressed")
 
-            takePicture()
+                takePicture()
 
-            /* wolfram alpha api call
-            val retrieveGraph = @SuppressLint("StaticFieldLeak")
-            object : RetrieveGraph(){
-                override fun onResponseReceived(result: Any?) {
-                    myViewModel.graph.value = result as Graph
+                /* wolfram alpha api call
+                val retrieveGraph = @SuppressLint("StaticFieldLeak")
+                object : RetrieveGraph(){
+                    override fun onResponseReceived(result: Any?) {
+                        myViewModel.graph.value = result as Graph
+                    }
                 }
+                val testInputCoords = arrayOf(Pair(1f, 2f), Pair(2f, 4f), Pair(3f, 6f))
+                retrieveGraph.execute(GraphInput(resources.getString(R.string.wolfram_alpha_appID), testInputCoords))
+                */
+
+                //imageView.setImageBitmap(plotImageInput(requireContext(), bmp))   // use for testing to see what input image is fed into the model
             }
-            val testInputCoords = arrayOf(Pair(1f, 2f), Pair(2f, 4f), Pair(3f, 6f))
-            retrieveGraph.execute(GraphInput(resources.getString(R.string.wolfram_alpha_appID), testInputCoords))
+
+            /*
+            myViewModel.graph.observe(viewLifecycleOwner) {
+                Log.i("wolfram api response", "linear: ${it.linear}, periodic: ${it.periodic}, logarithmic: ${it.logarithmic}")
+            }
             */
 
-            //imageView.setImageBitmap(plotImageInput(requireContext(), bmp))   // use for testing to see what input image is fed into the model
-        }
-
-        /*
-        myViewModel.graph.observe(viewLifecycleOwner) {
-            Log.i("wolfram api response", "linear: ${it.linear}, periodic: ${it.periodic}, logarithmic: ${it.logarithmic}")
-        }
-        */
-
-        /* check for camera permissions */
-        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
-            button.isEnabled = false
-            Toast.makeText(
+            /* check for camera permissions */
+            if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
+                button.isEnabled = false
+                Toast.makeText(
                     requireContext(),
                     "Please enable camera permissions and restart the app",
                     Toast.LENGTH_LONG
-            ).show()
-        }
+                ).show()
+            }
 
-        /* camera setup */
+            /* camera setup */
 
-        previewView = root.findViewById(R.id.previewView)
+            previewView = root.findViewById(R.id.previewView)
 
-        cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
-        cameraProviderFuture.addListener(Runnable {
-            val cameraProvider = cameraProviderFuture.get()
-            bindPreview(cameraProvider)
-        }, ContextCompat.getMainExecutor(requireContext()))
+            cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
+            cameraProviderFuture.addListener(Runnable {
+                val cameraProvider = cameraProviderFuture.get()
+                bindPreview(cameraProvider)
+            }, ContextCompat.getMainExecutor(requireContext()))
 
-        return root
+            return root
     }
 
     override fun onDestroyView() {
@@ -130,52 +150,62 @@ class HomeFragment: Fragment(), Executor {
                     image.close()
                 })*/
 
-        imageCapture = ImageCapture.Builder()
-            .setTargetRotation(requireView().display.rotation)
-            .build()
+        imageCapture = ImageCapture.Builder().build()
 
         var camera = cameraProvider.bindToLifecycle(
-                this as LifecycleOwner,
-                cameraSelector,
-                imageCapture,
-                preview
+            this as LifecycleOwner,
+            cameraSelector,
+            imageCapture,
+            preview
         )
     }
 
     private fun takePicture() {
         val outputFile = File(
-                requireContext().getExternalFilesDir(
-                        Environment.DIRECTORY_PICTURES
-                ), "image"
+            requireContext().getExternalFilesDir(
+                Environment.DIRECTORY_PICTURES
+            ), "image"
         )
         val outputFileOptions = ImageCapture.OutputFileOptions.Builder(outputFile).build()
         imageCapture.takePicture(outputFileOptions, this,
-                object : ImageCapture.OnImageSavedCallback {
-                    override fun onError(error: ImageCaptureException) {
-                        // insert your code here.
-                        requireActivity().runOnUiThread {
-                            Toast.makeText(
-                                    requireContext(),
-                                    "Something went wrong taking a picture :(",
-                                    Toast.LENGTH_SHORT
-                            ).show()
-                        }
+            object : ImageCapture.OnImageSavedCallback {
+                override fun onError(error: ImageCaptureException) {
+                    // insert your code here.
+                    requireActivity().runOnUiThread {
+                        Toast.makeText(
+                            requireContext(),
+                            "Something went wrong taking a picture :(",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
+                }
 
-                    override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                        requireActivity().runOnUiThread {
-                            Log.i("model", outputFile.path)
-                            val bundle = bundleOf("bmpFile" to outputFile)
-                            findNavController().navigate(
-                                    R.id.action_homeFragment_to_displayGraphFragment,
-                                    bundle
-                            )
-                        }
+                override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                    requireActivity().runOnUiThread {
+                        Log.i("model", outputFile.path)
+                        val bundle = bundleOf("bmpFile" to outputFile)
+                        findNavController().navigate(
+                            R.id.action_homeFragment_to_displayGraphFragment,
+                            bundle
+                        )
                     }
-                })
+                }
+            })
     }
 
     override fun execute(command: Runnable?) {
         Thread(command).run()
+    }
+
+    override fun onStart(){
+        super.onStart()
+        if (orientationEventListener.canDetectOrientation()) {
+            orientationEventListener.enable()
+        }
+    }
+
+    override fun onStop(){
+        super.onStop()
+        orientationEventListener.disable()
     }
 }
