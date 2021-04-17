@@ -138,7 +138,7 @@ class HomeFragment: Fragment(), Executor {
 
         imageCapture = ImageCapture.Builder().build()
 
-        var camera = cameraProvider.bindToLifecycle(
+        val camera = cameraProvider.bindToLifecycle(
             this as LifecycleOwner,
             cameraSelector,
             imageCapture,

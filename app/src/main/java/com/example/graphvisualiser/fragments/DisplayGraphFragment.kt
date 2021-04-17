@@ -1,10 +1,10 @@
 package com.example.graphvisualiser.fragments
 
 import android.annotation.SuppressLint
-import android.app.ActionBar
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.graphics.Matrix
 import android.media.ExifInterface
 import android.net.Uri
@@ -41,6 +41,7 @@ import java.io.File
 class DisplayGraphFragment: Fragment() {
     private val myViewModel: MyViewModel by activityViewModels()
     lateinit var graphImageView: ImageView
+    lateinit var overlayGraphImageView: ImageView
     lateinit var bottomSheet: ScrollView
     lateinit var intent: Intent
 
@@ -114,6 +115,8 @@ class DisplayGraphFragment: Fragment() {
         })*/
 
         graphImageView = root.findViewById(R.id.graphImageView)
+        overlayGraphImageView = root.findViewById(R.id.overlayGraphImageView)
+        overlayGraphImageView.visibility = View.GONE
         // set the original camera image
         val bmp = rotateImageIfRequired(BitmapFactory.decodeFile(bmpFile.path), bmpFile.toUri())
 
@@ -126,13 +129,10 @@ class DisplayGraphFragment: Fragment() {
 
         graphImageView.setImageBitmap(bmp)
 
-        if (myViewModel.graph.value != null) {
-            graphImageView.setImageBitmap(myViewModel.graph.value!!.image)
-        }
-
         myViewModel.graph.observe(viewLifecycleOwner, Observer{
             if (it.querySuccessful == true){
-                graphImageView.setImageBitmap(it.image)
+                overlayGraphImageView.setImageBitmap(replaceColor(it.image!!))
+                overlayGraphImageView.visibility = View.VISIBLE
             }
         })
 
@@ -175,5 +175,17 @@ class DisplayGraphFragment: Fragment() {
         val rotatedImg = Bitmap.createBitmap(img, 0, 0, img.width, img.height, matrix, true)
         img.recycle()
         return rotatedImg
+    }
+
+    private fun replaceColor(src: Bitmap): Bitmap {
+        val width = src.width
+        val height = src.height
+        val pixels = IntArray(width * height)
+        src.getPixels(pixels, 0, 1 * width, 0, 0, width, height)
+        for (x in pixels.indices) {
+            //    pixels[x] = ~(pixels[x] << 8 & 0xFF000000) & Color.BLACK;
+            if (pixels[x] == Color.WHITE) pixels[x] = 0
+        }
+        return Bitmap.createBitmap(pixels, width, height, Bitmap.Config.ARGB_8888)
     }
 }

@@ -6,11 +6,23 @@
     android:layout_height="match_parent"
     android:layout_margin="10dp">
 
-    <ImageView
-        android:id="@+id/graphImageView"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:scaleType="fitCenter" />
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/graphImageView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitCenter" />
+
+        <ImageView
+            android:id="@+id/overlayGraphImageView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitCenter"
+            tools:srcCompat="@tools:sample/avatars" />
+    </FrameLayout>
 
     <ScrollView
         android:id="@+id/bottomSheet"
