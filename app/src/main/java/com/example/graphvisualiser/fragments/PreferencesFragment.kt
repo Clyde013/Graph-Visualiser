@@ -35,8 +35,17 @@ class PreferencesFragment: Fragment() {
             // all values in the preferences fragment are saved to SharedPreferences
             // and will be retained even if app is closed
             val sharedPref = activity?.getPreferences(Context.MODE_PRIVATE)
-            findPreference<Preference>("name_pref")?.summary = "name"   // change displayed values like this (will be updated in SharedPrefs)
-            print(sharedPref?.getBoolean("switch_pref", false)) // access stored values like this
+            print(sharedPref?.getBoolean("switch_pref", true)) // access stored values like this
+        }
+
+        override fun onPreferenceTreeClick(preference: Preference?): Boolean {
+            when (preference?.key){
+                "mode_pref" -> {    // toggling light and dark mode
+
+                }
+            }
+
+            return true
         }
     }
 }

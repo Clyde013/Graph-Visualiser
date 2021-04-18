@@ -1,18 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <Preference
-        android:layout_width="match_parent"
-        android:key="name_pref"
-        android:title="Name"/>
-
     <SwitchPreference
         android:layout_width="match_parent"
-        android:key="switch_pref"
-        android:title="Switch Pref"/>
-
-    <EditTextPreference
-        android:layout_width="match_parent"
-        android:key="edit_text_pref"
-        android:title="EditText Pref"/>
+        android:key="mode_pref"
+        android:title="Dark Mode"
+        android:defaultValue="true"/>
 </PreferenceScreen>

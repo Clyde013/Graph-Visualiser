@@ -2,16 +2,15 @@ package com.example.graphvisualiser.fragments
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Color
-import android.graphics.Matrix
+import android.graphics.*
+import android.graphics.drawable.Drawable
 import android.media.ExifInterface
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
@@ -22,6 +21,7 @@ import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -37,13 +37,13 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.gson.Gson
 import pl.droidsonroids.gif.GifImageView
 import java.io.File
+import kotlin.math.sqrt
 
-class DisplayGraphFragment: Fragment() {
+class DisplayGraphFragment: Fragment(), View.OnTouchListener {
     private val myViewModel: MyViewModel by activityViewModels()
     lateinit var graphImageView: ImageView
     lateinit var overlayGraphImageView: ImageView
     lateinit var bottomSheet: ScrollView
-    lateinit var intent: Intent
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -90,13 +90,19 @@ class DisplayGraphFragment: Fragment() {
                 graphButton.visibility = View.VISIBLE
             }
 
-            override fun onFailed(resultData: Bundle?) {
-                Log.i("model", "inference failed")
+            override fun onFailedNoCharacters(resultData: Bundle?) {
+                Log.i("model", "inference failed no characters detected")
+                Toast.makeText(requireContext(), "No characters detected, please retry taking a picture", Toast.LENGTH_SHORT).show()
+                findNavController().navigate(R.id.action_displayGraphFragment_to_homeFragment)
+            }
+
+            override fun onFailedOperationCancelled(resultData: Bundle?) {
+                Log.i("model", "user changed fragments, do nothing")
             }
         }
 
 
-        intent = Intent(requireContext(), ModelInferenceService::class.java)
+        val intent = Intent(requireContext(), ModelInferenceService::class.java)
         intent.putExtra("receiver", resultReceiver)
         intent.putExtra("modelFile", myViewModel.modelFile.value)
         intent.putExtra("bmpFile", bmpFile)
@@ -117,22 +123,18 @@ class DisplayGraphFragment: Fragment() {
         graphImageView = root.findViewById(R.id.graphImageView)
         overlayGraphImageView = root.findViewById(R.id.overlayGraphImageView)
         overlayGraphImageView.visibility = View.GONE
+        overlayGraphImageView.setOnTouchListener(this)
         // set the original camera image
         val bmp = rotateImageIfRequired(BitmapFactory.decodeFile(bmpFile.path), bmpFile.toUri())
-
-        /*
-        val bm: InputStream = resources.openRawResource(R.raw.justin_coords)
-        val bufferedInputStream = BufferedInputStream(bm)
-        val rawbmp = BitmapFactory.decodeStream(bufferedInputStream)
-        val nh = (rawbmp.height * (512.0 / rawbmp.width)).toInt()
-        val resbmp = Bitmap.createScaledBitmap(rawbmp, 512, nh, true)*/
 
         graphImageView.setImageBitmap(bmp)
 
         myViewModel.graph.observe(viewLifecycleOwner, Observer{
             if (it.querySuccessful == true){
-                overlayGraphImageView.setImageBitmap(replaceColor(it.image!!))
+                // overlayGraphImageView.setImageBitmap(replaceColor(it.image!!))
+                overlayGraphImageView.setImageBitmap(it.image!!)
                 overlayGraphImageView.visibility = View.VISIBLE
+                graphImageView.alpha = 0.5f
             }
         })
 
@@ -140,7 +142,11 @@ class DisplayGraphFragment: Fragment() {
             val retrieveGraph = @SuppressLint("StaticFieldLeak")
             object : RetrieveGraph(){
                 override fun onResponseReceived(result: Any?) {
-                    myViewModel.graph.value = result as Graph
+                    if (result != null) {
+                        myViewModel.graph.value = result as Graph
+                    } else {    // some network error probably?
+                        Toast.makeText(requireContext(), "Please check your internet connection!", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
             try {
@@ -154,9 +160,11 @@ class DisplayGraphFragment: Fragment() {
         return root
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
+    override fun onStop() {
+        super.onStop()
+        val intent = Intent(requireContext(), ModelInferenceService::class.java)
         requireActivity().stopService(intent)
+        Log.i("custom service onStop", "intent service stopped")
     }
 
     private fun rotateImageIfRequired(img: Bitmap, selectedImage: Uri): Bitmap? {
@@ -177,15 +185,126 @@ class DisplayGraphFragment: Fragment() {
         return rotatedImg
     }
 
-    private fun replaceColor(src: Bitmap): Bitmap {
-        val width = src.width
-        val height = src.height
-        val pixels = IntArray(width * height)
-        src.getPixels(pixels, 0, 1 * width, 0, 0, width, height)
-        for (x in pixels.indices) {
-            //    pixels[x] = ~(pixels[x] << 8 & 0xFF000000) & Color.BLACK;
-            if (pixels[x] == Color.WHITE) pixels[x] = 0
+    // touch gesture things
+    private val TAG: String? = "Touch"
+
+    // These matrices will be used to move and zoom image
+    var matrix = Matrix()
+    var savedMatrix = Matrix()
+    var savedMatrix2 = Matrix()
+
+    // We can be in one of these 3 states
+    val NONE = 0
+    val DRAG = 1
+    val ZOOM = 2
+    var mode = NONE
+
+    // Remember some things for zooming
+    var start: PointF = PointF()
+    var mid: PointF = PointF()
+    var oldDist = 1f
+
+    override fun onTouch(v: View?, event: MotionEvent?): Boolean {
+        val view = v as ImageView
+
+        if (event == null){
+            return false
         }
-        return Bitmap.createBitmap(pixels, width, height, Bitmap.Config.ARGB_8888)
+
+        // Handle touch events here...
+        when (event.action and MotionEvent.ACTION_MASK) {
+            MotionEvent.ACTION_DOWN -> {
+                savedMatrix.set(matrix)
+                start.set(event.x, event.y)
+                Log.d(TAG, "mode=DRAG")
+                mode = DRAG
+            }
+            MotionEvent.ACTION_POINTER_DOWN -> {
+                try{
+                    oldDist = spacing(event)
+                    Log.d(TAG, "oldDist=$oldDist")
+                    if (oldDist > 10f) {
+                        savedMatrix.set(matrix)
+                        midPoint(mid, event)
+                        mode = ZOOM
+                        Log.d(TAG, "mode=ZOOM")
+                    }
+                } catch (e: Exception){
+                    e.printStackTrace()
+                    Log.d(TAG, "pointer index out of range bug")
+                }
+            }
+            MotionEvent.ACTION_UP -> {
+                mode = NONE
+                Log.d(TAG, "mode=NONE")
+                savedMatrix.set(matrix)
+            }
+            MotionEvent.ACTION_MOVE -> if (mode === DRAG) {
+                // ...
+                matrix.set(savedMatrix)
+                matrix.postTranslate(event.x - start.x,
+                        event.y - start.y)
+            } else if (mode === ZOOM) {
+                try {
+                    val newDist: Float = spacing(event)
+                    Log.d(TAG, "newDist=$newDist")
+                    if (newDist > 10f) {
+                        matrix.set(savedMatrix)
+                        val scale: Float = newDist / oldDist
+                        matrix.postScale(scale, scale, mid.x, mid.y)
+                    }
+                } catch (e: Exception){
+                    e.printStackTrace()
+                    Log.d(TAG, "pointer index out of range bug")
+                }
+            }
+        }
+
+        //fixing()
+        view.imageMatrix = matrix
+        return true // indicate event was handled
+    }
+
+    /** Determine the space between the first two fingers  */
+    private fun spacing(event: MotionEvent): Float {
+        val x = event.getX(0) - event.getX(1)
+        val y = event.getY(0) - event.getY(1)
+        return sqrt(x * x + y * y)
+    }
+
+    /** Calculate the mid point of the first two fingers  */
+    private fun midPoint(point: PointF, event: MotionEvent) {
+        val x = event.getX(0) + event.getX(1)
+        val y = event.getY(0) + event.getY(1)
+        point[x / 2] = y / 2
+    }
+
+    // make sure dragged image doesnt exit ui
+    fun fixing() {
+        val value = FloatArray(9)
+        matrix.getValues(value)
+        val savedValue = FloatArray(9)
+        savedMatrix2.getValues(savedValue)
+        val width: Int = overlayGraphImageView.width
+        val height: Int = overlayGraphImageView.height
+        val d: Drawable = overlayGraphImageView.drawable ?: return
+        val imageWidth: Int = d.intrinsicWidth
+        val imageHeight: Int = d.intrinsicHeight
+        val scaleWidth = (imageWidth * value[0]).toInt()
+        val scaleHeight = (imageHeight * value[4]).toInt()
+
+        // don't let the image go outside
+        if (value[2] > width - 1) value[2] = (width - 10).toFloat() else if (value[5] > height - 1) value[5] = (height - 10).toFloat() else if (value[2] < -(scaleWidth - 1)) value[2] = (-(scaleWidth - 10)).toFloat() else if (value[5] < -(scaleHeight - 1)) value[5] = (-(scaleHeight - 10)).toFloat()
+
+        // maximum zoom ratio: MAx
+        val MAX_ZOOM = 5f
+        if (value[0] > MAX_ZOOM || value[4] > MAX_ZOOM) {
+            value[0] = MAX_ZOOM
+            value[4] = MAX_ZOOM
+            //value[2] = savedValue[2];
+            //value[5] = savedValue[5];
+        }
+        matrix.setValues(value)
+        savedMatrix2.set(matrix)
     }
 }

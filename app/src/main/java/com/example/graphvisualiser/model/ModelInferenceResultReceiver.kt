@@ -11,13 +11,19 @@ abstract class ModelInferenceResultReceiver(handler: Handler): ResultReceiver(ha
                 onSuccess(resultData)
             }
 
-            ModelInferenceService.Constants.FAILED -> {
-                onFailed(resultData)
+            ModelInferenceService.Constants.FAILED_NO_CHARACTERS -> {
+                onFailedNoCharacters(resultData)
+            }
+
+            ModelInferenceService.Constants.FAILED_OPERATION_CANCELLED -> {
+                onFailedOperationCancelled(resultData)
             }
         }
     }
 
     abstract fun onSuccess(resultData: Bundle?)
 
-    abstract fun onFailed(resultData: Bundle?)
+    abstract fun onFailedNoCharacters(resultData: Bundle?)
+
+    abstract fun onFailedOperationCancelled(resultData: Bundle?)    // user changed fragments
 }

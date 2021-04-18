@@ -11,6 +11,7 @@ import java.io.IOException
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.MalformedURLException
+import java.net.SocketTimeoutException
 import java.net.URL
 
 abstract class RetrieveGraph: AsyncTask<GraphInput, Void, Graph>(), ClientInterface {
@@ -26,13 +27,16 @@ abstract class RetrieveGraph: AsyncTask<GraphInput, Void, Graph>(), ClientInterf
         }
 
         val url = URL(stringUrl)
-        val urlConnection: HttpURLConnection = url.openConnection() as HttpURLConnection
-        //try {
+        try {
+            val urlConnection: HttpURLConnection = url.openConnection() as HttpURLConnection
             parser.setInput(urlConnection.inputStream, "UTF-8")
-        /*} catch (e: Exception){
-            e.printStackTrace()
+        } catch (e: IOException) {
+            Log.e("api call", "io exception...?")
             return null
-        }*/
+        } catch (e: SocketTimeoutException) {
+            Log.e("api call", "socket timed out")
+            return null
+        }
 
         var eventType = parser.eventType    // event type could be START_TAG or END_TAG, etc.
         val graph = Graph()
