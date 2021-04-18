@@ -2,13 +2,16 @@ package com.example.graphvisualiser.fragments
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentContainerView
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.SwitchPreference
 import com.example.graphvisualiser.R
 
 class PreferencesFragment: Fragment() {
@@ -30,18 +33,39 @@ class PreferencesFragment: Fragment() {
 
     class MyPreferenceFragment: PreferenceFragmentCompat(){
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-            setPreferencesFromResource(R.xml.preferences, rootKey)
+            addPreferencesFromResource(R.xml.preferences)
 
             // all values in the preferences fragment are saved to SharedPreferences
             // and will be retained even if app is closed
+
+            val switchPreference = findPreference<SwitchPreference>("mode_pref")
+            switchPreference?.switchTextOn = "Dark Mode"
+            switchPreference?.switchTextOff = "Light Mode"
+
             val sharedPref = activity?.getPreferences(Context.MODE_PRIVATE)
-            print(sharedPref?.getBoolean("switch_pref", true)) // access stored values like this
+            switchPreference?.isChecked = sharedPref?.getBoolean("mode_pref", true)!!
+
         }
 
         override fun onPreferenceTreeClick(preference: Preference?): Boolean {
             when (preference?.key){
                 "mode_pref" -> {    // toggling light and dark mode
+                    val switchPreference = preference as SwitchPreference
+                    if (switchPreference.isChecked) {
+                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+                        Log.i("mode", "pref click dark mode")
+                    } else {
+                        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+                        Log.i("mode","pref click light mode")
+                    }
 
+                    val sharedPref = activity?.getPreferences(Context.MODE_PRIVATE)
+                    if (sharedPref != null) {
+                        with(sharedPref.edit()) {
+                            putBoolean("mode_pref", switchPreference.isChecked)
+                            apply()
+                        }
+                    }
                 }
             }
 

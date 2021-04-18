@@ -23,7 +23,8 @@
         </activity>
 
         <activity android:name=".MainActivity"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.GraphVisualiser"/>
 
         <!-- used for google ocr text bounding boxes, but i'm not using them because its unreliable
         <meta-data           for numbers and symbols

@@ -3,6 +3,5 @@
     <SwitchPreference
         android:layout_width="match_parent"
         android:key="mode_pref"
-        android:title="Dark Mode"
-        android:defaultValue="true"/>
+        android:title="Dark Mode"/>
 </PreferenceScreen>

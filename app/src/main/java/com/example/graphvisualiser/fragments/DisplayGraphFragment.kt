@@ -157,6 +157,11 @@ class DisplayGraphFragment: Fragment(), View.OnTouchListener {
             }
         }
 
+        // matrix manipulation for bitmap from api to show at center of image
+        val width: Int = overlayGraphImageView.width
+        val height: Int = overlayGraphImageView.height
+        matrix.postTranslate(width / 2f, height / 2f)
+
         return root
     }
 
