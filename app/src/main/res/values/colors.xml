@@ -26,4 +26,20 @@
     <color name="tertiary3">#336C92</color>
     <color name="tertiary4">#1C577D</color>
 
+    <!-- light theme -->
+    <color name="colorPrimary">@color/white</color>
+    <color name="colorPrimaryVariant">@color/white</color>
+    <color name="colorOnPrimary">@color/white</color>
+    <color name="colorSecondary">@color/white</color>
+    <color name="colorSecondaryVariant">@color/white</color>
+    <color name="colorOnSecondary">@color/white</color>
+
+    <!-- dark theme -->
+    <color name="colorDarkPrimary">@color/white</color>
+    <color name="colorDarkPrimaryVariant">@color/white</color>
+    <color name="colorDarkOnPrimary">@color/white</color>
+    <color name="colorDarkSecondary">@color/white</color>
+    <color name="colorDarkSecondaryVariant">@color/white</color>
+    <color name="colorDarkOnSecondary">@color/white</color>
+
 </resources>

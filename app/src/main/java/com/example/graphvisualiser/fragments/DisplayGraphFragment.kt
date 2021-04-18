@@ -122,6 +122,7 @@ class DisplayGraphFragment: Fragment(), View.OnTouchListener {
 
         graphImageView = root.findViewById(R.id.graphImageView)
         overlayGraphImageView = root.findViewById(R.id.overlayGraphImageView)
+        overlayGraphImageView.setImageBitmap(null)  // clear bitmap from potential previous calls
         overlayGraphImageView.visibility = View.GONE
         overlayGraphImageView.setOnTouchListener(this)
         // set the original camera image
@@ -133,8 +134,19 @@ class DisplayGraphFragment: Fragment(), View.OnTouchListener {
             if (it.querySuccessful == true){
                 // overlayGraphImageView.setImageBitmap(replaceColor(it.image!!))
                 overlayGraphImageView.setImageBitmap(it.image!!)
+                // matrix manipulation for bitmap from api to show at center of image
+                val matrix = Matrix()
+                val d: Drawable = overlayGraphImageView.drawable
+                val imageRectF = RectF(0f, 0f, d.intrinsicWidth.toFloat(), d.intrinsicHeight.toFloat())
+                val viewRectF = RectF(0f, 0f, overlayGraphImageView.width.toFloat(), overlayGraphImageView.height.toFloat())
+                matrix.setRectToRect(imageRectF, viewRectF, Matrix.ScaleToFit.CENTER)
+                overlayGraphImageView.imageMatrix = matrix
+
                 overlayGraphImageView.visibility = View.VISIBLE
                 graphImageView.alpha = 0.5f
+            } else {
+                Toast.makeText(requireContext(), "API query unsucessful, try again?", Toast.LENGTH_SHORT).show()
+                graphButton.isEnabled = true
             }
         })
 
@@ -151,16 +163,12 @@ class DisplayGraphFragment: Fragment(), View.OnTouchListener {
             }
             try {
                 Log.i("model api call", "${myViewModel.coordinatesAsInput().toString()}")
+                graphButton.isEnabled = false
                 retrieveGraph.execute(GraphInput(resources.getString(R.string.wolfram_alpha_appID), myViewModel.coordinatesAsInput()))
             } catch (e: Exception){     // threw exception because coord not enclosed in ()
                 Toast.makeText(requireContext(), "Please ensure all coordinates are correct!", Toast.LENGTH_SHORT).show()
             }
         }
-
-        // matrix manipulation for bitmap from api to show at center of image
-        val width: Int = overlayGraphImageView.width
-        val height: Int = overlayGraphImageView.height
-        matrix.postTranslate(width / 2f, height / 2f)
 
         return root
     }
@@ -196,7 +204,6 @@ class DisplayGraphFragment: Fragment(), View.OnTouchListener {
     // These matrices will be used to move and zoom image
     var matrix = Matrix()
     var savedMatrix = Matrix()
-    var savedMatrix2 = Matrix()
 
     // We can be in one of these 3 states
     val NONE = 0
@@ -264,8 +271,6 @@ class DisplayGraphFragment: Fragment(), View.OnTouchListener {
                 }
             }
         }
-
-        //fixing()
         view.imageMatrix = matrix
         return true // indicate event was handled
     }
@@ -282,34 +287,5 @@ class DisplayGraphFragment: Fragment(), View.OnTouchListener {
         val x = event.getX(0) + event.getX(1)
         val y = event.getY(0) + event.getY(1)
         point[x / 2] = y / 2
-    }
-
-    // make sure dragged image doesnt exit ui
-    fun fixing() {
-        val value = FloatArray(9)
-        matrix.getValues(value)
-        val savedValue = FloatArray(9)
-        savedMatrix2.getValues(savedValue)
-        val width: Int = overlayGraphImageView.width
-        val height: Int = overlayGraphImageView.height
-        val d: Drawable = overlayGraphImageView.drawable ?: return
-        val imageWidth: Int = d.intrinsicWidth
-        val imageHeight: Int = d.intrinsicHeight
-        val scaleWidth = (imageWidth * value[0]).toInt()
-        val scaleHeight = (imageHeight * value[4]).toInt()
-
-        // don't let the image go outside
-        if (value[2] > width - 1) value[2] = (width - 10).toFloat() else if (value[5] > height - 1) value[5] = (height - 10).toFloat() else if (value[2] < -(scaleWidth - 1)) value[2] = (-(scaleWidth - 10)).toFloat() else if (value[5] < -(scaleHeight - 1)) value[5] = (-(scaleHeight - 10)).toFloat()
-
-        // maximum zoom ratio: MAx
-        val MAX_ZOOM = 5f
-        if (value[0] > MAX_ZOOM || value[4] > MAX_ZOOM) {
-            value[0] = MAX_ZOOM
-            value[4] = MAX_ZOOM
-            //value[2] = savedValue[2];
-            //value[5] = savedValue[5];
-        }
-        matrix.setValues(value)
-        savedMatrix2.set(matrix)
     }
 }
