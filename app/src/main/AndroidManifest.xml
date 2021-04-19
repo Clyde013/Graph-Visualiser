@@ -15,7 +15,7 @@
         android:usesCleartextTraffic="true">
 
         <activity android:name=".SplashscreenActivity"
-            android:theme="@style/SplashTheme">
+            android:theme="@style/Theme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER"/>
@@ -23,8 +23,13 @@
         </activity>
 
         <activity android:name=".MainActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.GraphVisualiser"/>
+            android:screenOrientation="portrait"/>
+
+        <activity
+            android:name=".OnboardingActivity"
+            android:label="Onboarding"
+            android:theme="@style/Theme.NoActionBar">
+        </activity>
 
         <!-- used for google ocr text bounding boxes, but i'm not using them because its unreliable
         <meta-data           for numbers and symbols

@@ -28,18 +28,18 @@
 
     <!-- light theme -->
     <color name="colorPrimary">#9F2042</color>
-    <color name="colorPrimaryVariant">#9F2042</color>
+    <color name="colorPrimaryVariant">#DF305F</color>
     <color name="colorOnPrimary">#F8E5EE</color>
     <color name="colorSecondary">#7B0D1E</color>
-    <color name="colorSecondaryVariant">#7B0D1E</color>
+    <color name="colorSecondaryVariant">#A31228</color>
     <color name="colorOnSecondary">#F8E5EE</color>
 
     <!-- dark theme -->
     <color name="colorDarkPrimary">#211103</color>
-    <color name="colorDarkPrimaryVariant">#211103</color>
+    <color name="colorDarkPrimaryVariant">#432307</color>
     <color name="colorDarkOnPrimary">#F8E5EE</color>
     <color name="colorDarkSecondary">#3D1308</color>
-    <color name="colorDarkSecondaryVariant">#3D1308</color>
+    <color name="colorDarkSecondaryVariant">#591B0B</color>
     <color name="colorDarkOnSecondary">#F8E5EE</color>
 
 </resources>

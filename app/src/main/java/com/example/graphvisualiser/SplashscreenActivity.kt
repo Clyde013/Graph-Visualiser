@@ -67,7 +67,13 @@ class SplashscreenActivity : AppCompatActivity() {
                     if (checkPermissions()){ // begin checking for permissions
                         loadingTextView.text = "Looking good!"
                         Handler(Looper.myLooper()!!).postDelayed({
-                            val changedIntent = Intent(this, MainActivity::class.java)
+                            val sharedPref = this.getPreferences(Context.MODE_PRIVATE)
+                            val changedIntent = if (sharedPref.getBoolean("onboarding", true)){ // if user needs to go through onboarding
+                                sharedPref.edit().putBoolean("onboarding", false).apply()
+                                Intent(this, OnboardingActivity::class.java)
+                            } else {
+                                Intent(this, MainActivity::class.java)
+                            }
                             changedIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
                             startActivity(changedIntent)   // starting the activity should show no animation, otherwise it
                             finish()                // causes two separate animations to overlap with the override
@@ -93,7 +99,13 @@ class SplashscreenActivity : AppCompatActivity() {
             // all permissions granted
             loadingTextView.text = "Looking good!"
             Handler(Looper.myLooper()!!).postDelayed({
-                val changedIntent = Intent(this, MainActivity::class.java)
+                val sharedPref = this.getPreferences(Context.MODE_PRIVATE)
+                val changedIntent = if (sharedPref.getBoolean("onboarding", true)){ // if user needs to go through onboarding
+                    sharedPref.edit().putBoolean("onboarding", false).apply()
+                    Intent(this, OnboardingActivity::class.java)
+                } else {
+                    Intent(this, MainActivity::class.java)
+                }
                 changedIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
                 startActivity(changedIntent)   // starting the activity should show no animation, otherwise it
                 finish()                // causes two separate animations to overlap with the override

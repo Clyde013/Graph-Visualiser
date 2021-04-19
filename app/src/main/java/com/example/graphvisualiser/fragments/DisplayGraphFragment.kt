@@ -3,7 +3,6 @@ package com.example.graphvisualiser.fragments
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.*
-import android.graphics.drawable.Drawable
 import android.media.ExifInterface
 import android.net.Uri
 import android.os.Bundle
@@ -14,9 +13,7 @@ import android.widget.*
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
-import androidx.lifecycle.observe
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -28,7 +25,7 @@ import com.example.graphvisualiser.model.ModelInferenceService
 import com.example.graphvisualiser.queryingapi.Graph
 import com.example.graphvisualiser.queryingapi.GraphInput
 import com.example.graphvisualiser.queryingapi.RetrieveGraph
-import com.example.graphvisualiser.recyclerview.CoordinateAdapter
+import com.example.graphvisualiser.adapters.CoordinateAdapter
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.gson.Gson
 import pl.droidsonroids.gif.GifImageView
@@ -161,15 +158,15 @@ class DisplayGraphFragment: Fragment(), View.OnTouchListener {
                     graphImageView.alpha = 0.5f
 
                     equationsLinearLayout.visibility = View.VISIBLE
-                    if (it.linear != null) {
+                    if (!it.linear.isNullOrBlank()) {
                         linearEquationTextView.text = "Linear Equation: ${it.linear}"
                         linearEquationTextView.visibility = View.VISIBLE
                     }
-                    if (it.periodic != null) {
+                    if (!it.periodic.isNullOrBlank()) {
                         periodicEquationTextView.text = "Periodic Equation: ${it.periodic}"
                         periodicEquationTextView.visibility = View.VISIBLE
                     }
-                    if (it.logarithmic != null) {
+                    if (!it.logarithmic.isNullOrBlank()) {
                         logarithmicEquationTextView.text = "Logarithmic Equation: ${it.logarithmic}"
                         logarithmicEquationTextView.visibility = View.VISIBLE
                     }

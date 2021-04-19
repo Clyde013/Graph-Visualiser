@@ -1,10 +1,7 @@
-package com.example.graphvisualiser.recyclerview
+package com.example.graphvisualiser.adapters
 
-import android.content.Context
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.graphvisualiser.CoordinateLiveData

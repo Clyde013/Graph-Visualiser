@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Graph Visualiser</string>
+
+    <string name="onboarding_fragment_0">Supported Characters</string>
+    <string name="onboarding_fragment_1">Do Not Do This</string>
+    <string name="onboarding_fragment_2">Do This</string>
 </resources>
