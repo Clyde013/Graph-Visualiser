@@ -27,19 +27,19 @@
     <color name="tertiary4">#1C577D</color>
 
     <!-- light theme -->
-    <color name="colorPrimary">@color/white</color>
-    <color name="colorPrimaryVariant">@color/white</color>
-    <color name="colorOnPrimary">@color/white</color>
-    <color name="colorSecondary">@color/white</color>
-    <color name="colorSecondaryVariant">@color/white</color>
-    <color name="colorOnSecondary">@color/white</color>
+    <color name="colorPrimary">#9F2042</color>
+    <color name="colorPrimaryVariant">#9F2042</color>
+    <color name="colorOnPrimary">#F8E5EE</color>
+    <color name="colorSecondary">#7B0D1E</color>
+    <color name="colorSecondaryVariant">#7B0D1E</color>
+    <color name="colorOnSecondary">#F8E5EE</color>
 
     <!-- dark theme -->
-    <color name="colorDarkPrimary">@color/white</color>
-    <color name="colorDarkPrimaryVariant">@color/white</color>
-    <color name="colorDarkOnPrimary">@color/white</color>
-    <color name="colorDarkSecondary">@color/white</color>
-    <color name="colorDarkSecondaryVariant">@color/white</color>
-    <color name="colorDarkOnSecondary">@color/white</color>
+    <color name="colorDarkPrimary">#211103</color>
+    <color name="colorDarkPrimaryVariant">#211103</color>
+    <color name="colorDarkOnPrimary">#F8E5EE</color>
+    <color name="colorDarkSecondary">#3D1308</color>
+    <color name="colorDarkSecondaryVariant">#3D1308</color>
+    <color name="colorDarkOnSecondary">#F8E5EE</color>
 
 </resources>

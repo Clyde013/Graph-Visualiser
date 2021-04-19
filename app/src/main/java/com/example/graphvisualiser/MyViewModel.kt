@@ -13,24 +13,32 @@ class MyViewModel: ViewModel() {
 
     val graph = MutableLiveData<Graph>()
 
-    val coordinates = ArrayList<CoordinateLiveData>()
+    val coordinates = MutableLiveData(ArrayList<CoordinateLiveData>())
+
+    fun addCoordinates(coordinate: String){
+        coordinates.value!!.add(CoordinateLiveData(coordinate))
+    }
+
+    fun removeCoordinates(position: Int){
+        coordinates.value!!.removeAt(position)
+    }
 
     fun setCoordinates(data: ArrayList<ArrayList<String>>){
-        coordinates.clear()
+        coordinates.value!!.clear()
 
         for (coordinate in data){
             var coordinateString = ""
             for (character in coordinate){
                 coordinateString = coordinateString.plus(character)
             }
-            coordinates.add(CoordinateLiveData(coordinateString))
+            coordinates.value!!.add(CoordinateLiveData(coordinateString))
         }
     }
 
     @Throws(Exception::class)
     fun coordinatesAsInput(): Array<String>{
         val result = arrayListOf<String>()
-        for (coordinate in coordinates){
+        for (coordinate in coordinates.value!!){
             if (coordinate.value != null){
                 if (coordinate.value!![0] == '(' && coordinate.value!![coordinate.value!!.length - 1] == ')') {
                     result.add(coordinate.value!!)

@@ -11,10 +11,13 @@ import com.example.graphvisualiser.CoordinateLiveData
 import com.example.graphvisualiser.R
 import com.example.graphvisualiser.databinding.CoordinateCardLayoutBinding
 import com.example.graphvisualiser.BR.coordinate
+import com.example.graphvisualiser.MyViewModel
 
-class CoordinateAdapter(private var dataSet: ArrayList<CoordinateLiveData>) : RecyclerView.Adapter<CoordinateAdapter.ViewHolder>(){
+class CoordinateAdapter(private var dataSet: ArrayList<CoordinateLiveData>, private val viewModel: MyViewModel) : RecyclerView.Adapter<CoordinateAdapter.ViewHolder>(){
 
-    inner class ViewHolder(val binding: CoordinateCardLayoutBinding): RecyclerView.ViewHolder(binding.root)
+    inner class ViewHolder(val binding: CoordinateCardLayoutBinding): RecyclerView.ViewHolder(binding.root){
+        val removeCoordinateButton = binding.removeCoordinateButton
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val context = parent.context
@@ -28,6 +31,12 @@ class CoordinateAdapter(private var dataSet: ArrayList<CoordinateLiveData>) : Re
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.binding.setVariable(coordinate, dataSet[position])
+
+        holder.removeCoordinateButton.setOnClickListener{   // remove the clicked item
+            viewModel.removeCoordinates(position)
+            notifyItemRemoved(position)
+            notifyItemRangeChanged(position, dataSet.size - position)
+        }
     }
 
     fun setCoordinates(data: ArrayList<CoordinateLiveData>){

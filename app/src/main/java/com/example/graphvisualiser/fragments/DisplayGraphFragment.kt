@@ -9,18 +9,14 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.MotionEvent
-import android.view.View
-import android.view.ViewGroup
-import android.widget.Button
-import android.widget.ImageView
-import android.widget.ScrollView
-import android.widget.Toast
+import android.view.*
+import android.widget.*
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
+import androidx.lifecycle.observe
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -45,6 +41,11 @@ class DisplayGraphFragment: Fragment(), View.OnTouchListener {
     lateinit var overlayGraphImageView: ImageView
     lateinit var bottomSheet: ScrollView
 
+    lateinit var equationsLinearLayout: LinearLayout
+    lateinit var linearEquationTextView: TextView
+    lateinit var periodicEquationTextView: TextView
+    lateinit var logarithmicEquationTextView: TextView
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -57,12 +58,25 @@ class DisplayGraphFragment: Fragment(), View.OnTouchListener {
         bottomSheetBehavior.peekHeight = 100
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
 
+        myViewModel.graph.value = null
+
+        equationsLinearLayout = root.findViewById<LinearLayout>(R.id.equationsLinearLayout)
+        linearEquationTextView = root.findViewById<TextView>(R.id.linearEquationTextView)
+        periodicEquationTextView = root.findViewById<TextView>(R.id.periodicEquationTextView)
+        logarithmicEquationTextView = root.findViewById<TextView>(R.id.logarithmicEquationTextView)
+        equationsLinearLayout.visibility = View.GONE
+        linearEquationTextView.visibility = View.GONE
+        periodicEquationTextView.visibility = View.GONE
+        logarithmicEquationTextView.visibility = View.GONE
+
         val coordinateRecyclerView = root.findViewById<RecyclerView>(R.id.coordinateRecyclerView)
         val coordinateLoadingGif = root.findViewById<GifImageView>(R.id.coordinateLoadingGifImageView)
         val graphButton = root.findViewById<Button>(R.id.graphButton)
+        val addCoordinateButton = root.findViewById<Button>(R.id.addCoordinateButton)
         coordinateLoadingGif.visibility = View.VISIBLE
         coordinateRecyclerView.visibility = View.GONE
         graphButton.visibility = View.GONE
+        addCoordinateButton.visibility = View.GONE
 
         val bmpFile = this.arguments?.getSerializable("bmpFile") as File
         val resultReceiver = object : ModelInferenceResultReceiver(Handler()){
@@ -72,22 +86,16 @@ class DisplayGraphFragment: Fragment(), View.OnTouchListener {
 
                 myViewModel.setCoordinates(predictedCoordinates)
 
-                coordinateRecyclerView.setHasFixedSize(true)
                 val layoutManager = LinearLayoutManager(requireContext())
+                coordinateRecyclerView.setHasFixedSize(true)
                 coordinateRecyclerView.layoutManager = layoutManager
                 coordinateRecyclerView.itemAnimator = DefaultItemAnimator()
-                coordinateRecyclerView.adapter = CoordinateAdapter(myViewModel.coordinates)
-
-                val factor: Float = requireContext().resources.displayMetrics.density
-                if (coordinateRecyclerView.layoutParams.height > 300 * factor){     // height > 300dp
-                    coordinateRecyclerView.layoutParams.height = (300 * factor).toInt()   // let user use scrollview
-                } else {
-                    coordinateRecyclerView.layoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT
-                }
+                coordinateRecyclerView.adapter = CoordinateAdapter(myViewModel.coordinates.value!!, myViewModel)
 
                 coordinateLoadingGif.visibility = View.GONE
                 coordinateRecyclerView.visibility = View.VISIBLE
                 graphButton.visibility = View.VISIBLE
+                addCoordinateButton.visibility = View.VISIBLE
             }
 
             override fun onFailedNoCharacters(resultData: Bundle?) {
@@ -122,7 +130,8 @@ class DisplayGraphFragment: Fragment(), View.OnTouchListener {
 
         graphImageView = root.findViewById(R.id.graphImageView)
         overlayGraphImageView = root.findViewById(R.id.overlayGraphImageView)
-        overlayGraphImageView.setImageBitmap(null)  // clear bitmap from potential previous calls
+        Log.i("1234", "clearing bitmap")
+        overlayGraphImageView.setImageResource(android.R.color.transparent)  // clear bitmap from potential previous calls
         overlayGraphImageView.visibility = View.GONE
         overlayGraphImageView.setOnTouchListener(this)
         // set the original camera image
@@ -131,21 +140,42 @@ class DisplayGraphFragment: Fragment(), View.OnTouchListener {
         graphImageView.setImageBitmap(bmp)
 
         myViewModel.graph.observe(viewLifecycleOwner, Observer{
-            if (it.querySuccessful == true){
-                // overlayGraphImageView.setImageBitmap(replaceColor(it.image!!))
-                overlayGraphImageView.setImageBitmap(it.image!!)
-                // matrix manipulation for bitmap from api to show at center of image
+            if (it != null) {
+                if (it.querySuccessful == true) {
+                    Log.i("1234", "setting bitmap")
+                    // overlayGraphImageView.setImageBitmap(replaceColor(it.image!!))
+                    overlayGraphImageView.setImageBitmap(it.image!!)
+                    // matrix manipulation for bitmap from api to show at center of image??? doesn't work?
+                    /*
                 val matrix = Matrix()
                 val d: Drawable = overlayGraphImageView.drawable
                 val imageRectF = RectF(0f, 0f, d.intrinsicWidth.toFloat(), d.intrinsicHeight.toFloat())
-                val viewRectF = RectF(0f, 0f, overlayGraphImageView.width.toFloat(), overlayGraphImageView.height.toFloat())
+                val viewRectF = RectF(0f, 0f, overlayGraphImageView.measuredWidth.toFloat(), overlayGraphImageView.measuredHeight.toFloat())
+                val offsetX: Float = (overlayGraphImageView.measuredHeight - d.intrinsicWidth) / 2f
+                val offsetY: Float = (overlayGraphImageView.measuredHeight - d.intrinsicHeight) / 2f
                 matrix.setRectToRect(imageRectF, viewRectF, Matrix.ScaleToFit.CENTER)
+                matrix.preTranslate(offsetX, offsetY)
                 overlayGraphImageView.imageMatrix = matrix
+                 */
+                    overlayGraphImageView.visibility = View.VISIBLE
+                    graphImageView.alpha = 0.5f
 
-                overlayGraphImageView.visibility = View.VISIBLE
-                graphImageView.alpha = 0.5f
-            } else {
-                Toast.makeText(requireContext(), "API query unsucessful, try again?", Toast.LENGTH_SHORT).show()
+                    equationsLinearLayout.visibility = View.VISIBLE
+                    if (it.linear != null) {
+                        linearEquationTextView.text = "Linear Equation: ${it.linear}"
+                        linearEquationTextView.visibility = View.VISIBLE
+                    }
+                    if (it.periodic != null) {
+                        periodicEquationTextView.text = "Periodic Equation: ${it.periodic}"
+                        periodicEquationTextView.visibility = View.VISIBLE
+                    }
+                    if (it.logarithmic != null) {
+                        logarithmicEquationTextView.text = "Logarithmic Equation: ${it.logarithmic}"
+                        logarithmicEquationTextView.visibility = View.VISIBLE
+                    }
+                } else {
+                    Toast.makeText(requireContext(), "API query unsucessful, try again?", Toast.LENGTH_SHORT).show()
+                }
                 graphButton.isEnabled = true
             }
         })
@@ -168,6 +198,13 @@ class DisplayGraphFragment: Fragment(), View.OnTouchListener {
             } catch (e: Exception){     // threw exception because coord not enclosed in ()
                 Toast.makeText(requireContext(), "Please ensure all coordinates are correct!", Toast.LENGTH_SHORT).show()
             }
+        }
+
+
+        addCoordinateButton.setOnClickListener {
+            myViewModel.addCoordinates("()")
+            coordinateRecyclerView.adapter?.notifyItemInserted(myViewModel.coordinates.value!!.size - 1)
+            coordinateRecyclerView.adapter?.notifyItemRangeChanged(myViewModel.coordinates.value!!.size - 1, 1)
         }
 
         return root

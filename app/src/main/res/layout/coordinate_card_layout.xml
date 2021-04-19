@@ -15,13 +15,29 @@
         app:contentPadding="20dp"
         app:cardElevation="10dp">
 
-        <EditText
-            android:id="@+id/editTextCoordinate"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ems="10"
-            android:inputType="text"
-            android:text="@={coordinate}"/>
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/editTextCoordinate"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="5"
+                android:ems="10"
+                android:inputType="text"
+                android:text="@={coordinate}"
+                android:layout_gravity="center_vertical"/>
+
+            <Button
+                android:id="@+id/removeCoordinateButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:text="Remove"
+                android:layout_gravity="center_vertical"/>
+        </LinearLayout>
 
     </androidx.cardview.widget.CardView>
 
